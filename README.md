@@ -36,6 +36,10 @@ então a imagem muda aos poucos em vez de pular.
 
 ## Controles
 
+- **Gerar rosto**: a IA cria uma pessoa nova do zero (idade, cabelo e detalhes sorteados)
+  e usa esse rosto como foto base. A descrição sorteada vai para o campo "Você", para as
+  cenas manterem a mesma pessoa. Cada rosto leva ~14 s.
+
 - **Descreva você**: algo como `a young man with short dark hair` ou `a woman with
   long curly hair and glasses`. Entra no lugar de `{eu}` nas cenas e evita que a IA
   troque seu cabelo, roupa ou gênero ao redor do rosto.

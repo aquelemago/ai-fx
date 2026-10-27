@@ -5,8 +5,8 @@ import { lerPreferencia, salvarPreferencia } from '../util/preferencias.js';
 import { formatarTempo } from '../util/tempo.js';
 
 export class PainelDeMontagem {
-  /** aoEscolherFoto(arquivo), aoGerar(), aoParar() */
-  constructor({ aoEscolherFoto, aoGerar, aoParar }) {
+  /** aoEscolherFoto(arquivo), aoGerarRosto(), aoGerar(), aoParar() */
+  constructor({ aoEscolherFoto, aoGerarRosto, aoGerar, aoParar }) {
     this.gerando = false;
     this.segPorQuadro = Number(lerPreferencia('segPorQuadro', 12)) || 12;
     this.montarRoteiros();
@@ -16,6 +16,7 @@ export class PainelDeMontagem {
     $('quantidades').addEventListener('change', () => this.atualizarEstimativa());
     $('arquivo').addEventListener('change', (e) => e.target.files[0] && aoEscolherFoto(e.target.files[0]));
     $('gerar').addEventListener('click', () => (this.gerando ? aoParar() : aoGerar()));
+    $('gerarRosto').addEventListener('click', aoGerarRosto);
     this.atualizarEstimativa();
   }
 
@@ -89,6 +90,16 @@ export class PainelDeMontagem {
 
   habilitarGerar(habilitado) {
     $('gerar').disabled = !this.gerando && !habilitado;
+  }
+
+  habilitarRosto(habilitado) {
+    $('gerarRosto').disabled = !habilitado;
+  }
+
+  /** Troca a descrição da pessoa (campo "Você") e guarda como preferência. */
+  definirDescricao(texto) {
+    $('eu').value = texto;
+    salvarPreferencia('eu', texto);
   }
 
   avisarParando() {

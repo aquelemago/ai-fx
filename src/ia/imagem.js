@@ -13,6 +13,11 @@ export async function imagemParaTensor(buffer, lado) {
   return chw;
 }
 
+// Imagem lisa e neutra: ponto de partida para gerar um rosto do zero (img2img com força máxima)
+export function imagemNeutra(lado) {
+  return sharp({ create: { width: lado, height: lado, channels: 3, background: { r: 128, g: 120, b: 110 } } }).png().toBuffer();
+}
+
 export function tensorParaPng(chw, lado) {
   const px = lado * lado;
   const rgb = Buffer.alloc(px * 3);

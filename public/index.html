@@ -29,10 +29,13 @@
         <div class="foto">
           <canvas id="base" width="512" height="512" aria-label="Sua foto recortada"></canvas>
           <div>
-            <label class="botao-linha">
-              <input type="file" id="arquivo" accept="image/*">
-              <span>Escolher foto</span>
-            </label>
+            <div class="acoes-foto">
+              <label class="botao-linha">
+                <input type="file" id="arquivo" accept="image/*">
+                <span>Escolher foto</span>
+              </label>
+              <button id="gerarRosto" class="botao-linha" disabled>Gerar rosto</button>
+            </div>
             <p id="infoBase" class="nota">De frente, com o rosto bem iluminado.</p>
           </div>
         </div>

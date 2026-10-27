@@ -2,6 +2,11 @@
 // Não conhece HTTP; recebe o gerador e o armazenamento prontos (injeção de dependência).
 import crypto from 'node:crypto';
 import { FilaSerial } from './fila.js';
+import { imagemNeutra } from '../ia/imagem.js';
+
+// Pede um retrato de frente, centralizado e com fundo liso: é o que a detecção e o recorte esperam
+export const promptDeRosto = (descricao) =>
+  `head and shoulders portrait photo of ${descricao}, front view, looking at camera, face in the center, plain background, soft studio light, sharp focus`;
 
 export class ServicoDeGeracao {
   constructor({ gerador, armazenamento, log = console.log }) {
@@ -42,6 +47,20 @@ export class ServicoDeGeracao {
       await this.armazenamento.salvar(parametros.baseId, 'ia', parametros.quadro, png);
     }
     this.log(`quadro ${parametros.quadro ?? '-'} gerado em ${(ms / 1000).toFixed(1)}s`);
+    return { png, ms };
+  }
+
+  /** Gera um rosto novo do zero, para ser usado como foto base. */
+  async gerarRosto({ descricao, semente }) {
+    if (!this.estado.pronto) throw new ErroModeloIndisponivel(this.estado.erro);
+    this.neutra ??= await imagemNeutra(this.gerador.lado);
+    const baseId = await this.prepararBase(this.neutra);
+    const t0 = Date.now();
+    const png = await this.fila.executar(() => this.gerador.gerar({
+      baseId, promptA: promptDeRosto(descricao), sementeA: semente, forca: 1, passos: 1,
+    }));
+    const ms = Date.now() - t0;
+    this.log(`rosto gerado em ${(ms / 1000).toFixed(1)}s (semente ${semente})`);
     return { png, ms };
   }
 

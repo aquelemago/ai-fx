@@ -45,6 +45,16 @@ export class ClienteApi {
     return resp.blob();
   }
 
+  /** Gera um rosto novo do zero e devolve a imagem (Blob PNG). */
+  async gerarRosto({ descricao, semente }) {
+    const resp = await this.pedir('/rosto', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ descricao, semente }),
+    });
+    return resp.blob();
+  }
+
   /** Guarda o quadro final em saidas/<id>/final_XXXX.png. Falhas aqui não interrompem nada. */
   salvarQuadro(baseId, indice, png) {
     return this.pedir(`/salvar/${baseId}/${indice}`, { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: png })
