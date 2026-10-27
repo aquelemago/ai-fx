@@ -23,6 +23,16 @@ export function parametrosDoQuadro(i, total, prompts, semente, suavidade) {
   };
 }
 
+/**
+ * Semente do repasse do rosto (naturalidade). É independente da suavidade da cena: o cenário
+ * muda devagar de um quadro para o outro, mas o rosto precisa variar como em dias diferentes.
+ * Se usasse as sementes da cena, quadros vizinhos receberiam quase o mesmo ruído e o rosto
+ * ficaria parado, como colado.
+ */
+export function sementeDoRosto(semente, indice) {
+  return (Math.imul(semente + 1, 0x9e3779b1) + Math.imul(indice + 1, 0x85ebca6b)) >>> 1;
+}
+
 /** Nome curto da cena mais próxima do quadro, para rotular a tira. */
 export function nomeDaCena(i, total, nomes, nCenas) {
   const indice = Math.round(posicaoNaSequencia(i, total, nCenas));

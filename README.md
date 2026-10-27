@@ -51,7 +51,7 @@ então a imagem muda aos poucos em vez de pular.
 - **Suavidade**: 1 = ruído novo a cada quadro (tremido, cara de time lapse real).
 - **Naturalidade do rosto**: depois de colar seu rosto como guia, a IA repassa o quadro com
   força baixa e refaz o rosto na luz da cena, como uma foto de outro dia. 0 deixa o rosto
-  fixo; 0,25–0,35 varia sem perder a identidade. Ligada, cada quadro leva ~2x o tempo.
+  fixo; 0,4–0,5 varia expressão e pele sem perder a identidade. Ligada, cada quadro leva ~2x o tempo.
 - **Continuidade**: quanto cada quadro parte do anterior (roupa, fundo e luz evoluem aos poucos).
 - **Preservar rosto**: força do rosto original usado como guia (antes do repasse da naturalidade).
 - **Harmonizar cor**: ajusta a cor do rosto colado pra combinar com a luz da cena.
