@@ -1,12 +1,10 @@
 // Validação dos pedidos que chegam pela API. Tudo que entra no gerador passa por aqui:
 // tipos conferidos, números limitados e textos com tamanho máximo.
 
-export class ErroDeValidacao extends Error {
-  constructor(mensagem) {
-    super(mensagem);
-    this.codigo = 'VALIDACAO';
-  }
-}
+import { ErroDeValidacao } from '../util/erros.js';
+
+export { ErroDeValidacao };
+import { validarIdDoProjeto } from '../projetos/manifesto.js';
 
 const ID_FOTO = /^[0-9a-f]{12}$/;
 
@@ -52,6 +50,7 @@ export function validarPedidoDeQuadro(corpo) {
   const sementeA = inteiro(corpo.sementeA, 'sementeA', 0);
   return {
     baseId: validarIdFoto(corpo.baseId),
+    projetoId: corpo.projetoId === undefined ? undefined : validarIdDoProjeto(corpo.projetoId),
     quadro: corpo.quadro === undefined ? undefined : validarNumeroDoQuadro(corpo.quadro),
     promptA,
     promptB: corpo.promptB === undefined ? promptA : texto(corpo.promptB, 'promptB'),

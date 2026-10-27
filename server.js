@@ -2,21 +2,29 @@
 // Cada peça recebe suas dependências prontas, então pode ser trocada ou testada isoladamente.
 import { lerConfig } from './src/config.js';
 import { criarGerador } from './src/ia/modelos.js';
-import { ArmazenamentoDeQuadros } from './src/servicos/armazenamento.js';
+import { RepositorioDeProjetos } from './src/projetos/repositorio.js';
 import { ServicoDeGeracao } from './src/servicos/servico-geracao.js';
+import { ServicoDeProjetos } from './src/servicos/servico-projetos.js';
 import { criarApp } from './src/http/app.js';
 
 const config = lerConfig();
 
-const servico = new ServicoDeGeracao({
-  gerador: criarGerador(config.modelo, config),
-  armazenamento: new ArmazenamentoDeQuadros(config.dirSaidas),
+const repositorio = new RepositorioDeProjetos(config.dirProjetos);
+const servico = new ServicoDeGeracao({ gerador: criarGerador(config.modelo, config), projetos: repositorio });
+const projetos = new ServicoDeProjetos({ repositorio, geracao: servico });
+
+const app = criarApp({
+  servico,
+  projetos,
+  dirPublico: config.dirPublico,
+  dirProjetos: config.dirProjetos,
+  dirMediapipe: config.dirMediapipe,
 });
 
-const app = criarApp({ servico, dirPublico: config.dirPublico, dirMediapipe: config.dirMediapipe });
-
-app.listen(config.porta, () => console.log(`Servidor em http://localhost:${config.porta} (carregando modelo ${config.modelo}...)`));
+const endereco = `http://localhost:${config.porta}`;
+app.listen(config.porta, config.host, () =>
+  console.log(`Servidor em ${endereco} (carregando modelo ${config.modelo}...)\nProjetos em ${config.dirProjetos}`));
 
 servico.iniciar()
-  .then(() => console.log(`Modelo pronto. Abra http://localhost:${config.porta}`))
+  .then(() => console.log(`Modelo pronto. Abra ${endereco}`))
   .catch((e) => console.error('Falha ao carregar o modelo (rodou npm run modelos?):', e.message));

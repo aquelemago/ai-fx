@@ -11,9 +11,11 @@ export function lerConfig(env = process.env) {
   return {
     raiz,
     porta: Number(env.PORT) || 3000,
+    // só a própria máquina acessa; HOST=0.0.0.0 abre para a rede local
+    host: env.HOST || '127.0.0.1',
     modelo: env.MODELO || 'sd-turbo',
     dirModelos,
-    dirSaidas: env.SAIDAS ? path.resolve(env.SAIDAS) : path.join(raiz, 'saidas'),
+    dirProjetos: env.PROJETOS ? path.resolve(env.PROJETOS) : path.join(raiz, 'projetos'),
     dirPublico: path.join(raiz, 'public'),
     dirMediapipe: [
       path.join(raiz, 'node_modules', '@mediapipe', 'tasks-vision'),
