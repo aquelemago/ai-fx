@@ -18,20 +18,10 @@ const PROJETOS = `<section class="grupo">
         </details>
       </section>`;
 
-const TIRA = `<aside class="tira" aria-labelledby="titulo-tira">
-      <header>
-        <h2 id="titulo-tira">Tira</h2>
-        <span id="contagem" class="nota"></span>
-      </header>
-      <div class="fenda" aria-hidden="true"></div>
-      <ol id="tira"></ol>
-    </aside>`;
-
 // display: contents deixa os elementos de dentro participarem da grade da cabine
 const Marcacao = ({ html }) => <div style={{ display: 'contents' }} dangerouslySetInnerHTML={{ __html: html }} />;
 
 export const ProjetosLegado = () => <Marcacao html={PROJETOS} />;
-export const TiraLegada = () => <Marcacao html={TIRA} />;
 
 /** Liga os painéis antigos ao estúdio depois que a marcação deles está na tela. */
 export function useLegado() {

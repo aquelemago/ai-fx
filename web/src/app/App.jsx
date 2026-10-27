@@ -2,7 +2,8 @@
 import { SpriteDeIcones } from '../design-system/index.js';
 import { Montagem } from '../funcionalidades/montagem/index.js';
 import { Palco } from '../funcionalidades/palco/index.js';
-import { ProjetosLegado, TiraLegada, useLegado } from '../legado/marcacao.jsx';
+import { Tira } from '../funcionalidades/tira/index.js';
+import { ProjetosLegado, useLegado } from '../legado/marcacao.jsx';
 import estilos from './App.module.css';
 
 export function App() {
@@ -13,7 +14,7 @@ export function App() {
       <div className={estilos.cabine}>
         <Montagem projetos={<ProjetosLegado />} />
         <Palco />
-        <TiraLegada />
+        <Tira />
       </div>
     </>
   );
