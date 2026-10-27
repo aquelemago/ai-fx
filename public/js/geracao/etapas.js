@@ -5,11 +5,13 @@
 //   3. foco: o quadro é alinhado para os olhos ficarem no mesmo ponto da foto original
 //   4. guia de identidade: o rosto original é colado por cima, com a cor da cena
 //   5. naturalidade: a IA repassa o quadro com força baixa e refaz o rosto na luz da cena,
-//      com expressão e pele levemente diferentes, sem perder as proporções
+//      com expressão e pele levemente diferentes, sem perder as proporções. O ruído deste passe
+//      tem semente própria por quadro (sementeDoRosto), separada da suavidade da cena
 //   6. foco de novo: o repasse pode mexer o rosto alguns pixels, então alinha outra vez
 //
 // Naturalidade 0 pula as etapas 5 e 6 (o rosto colado fica fixo, como uma imagem parada).
 // Continuidade 0 parte sempre só da foto original.
+import { sementeDoRosto } from '../dominio/plano.js';
 import { alinhar, colarRosto, misturarImagens } from '../rosto/composicao.js';
 
 const paraPng = (canvas) => canvas.convertToBlob({ type: 'image/png' });
@@ -35,8 +37,10 @@ export async function produzirQuadro({ cliente, detector, base, projetoId, anter
 
   // 5 e 6. naturalidade e foco de novo
   const idGuia = await cliente.enviarBase(await paraPng(guia));
+  const semente = sementeDoRosto(ajustes.semente, indice);
   const refeito = await createImageBitmap(await cliente.gerarQuadro({
-    ...parametros, baseId: idGuia, forca: ajustes.naturalidade, passos: ajustes.passos,
+    ...parametros, sementeA: semente, sementeB: semente, mixSemente: 0,
+    baseId: idGuia, forca: ajustes.naturalidade, passos: ajustes.passos,
   }));
   return alinharAoFoco(refeito);
 }

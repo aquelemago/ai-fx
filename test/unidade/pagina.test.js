@@ -1,7 +1,7 @@
 // Módulos puros da página (public/js/dominio e geometria do rosto), testados no Node.
 import { mock, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nomeDaCena, parametrosDoQuadro } from '../../public/js/dominio/plano.js';
+import { nomeDaCena, parametrosDoQuadro, sementeDoRosto } from '../../public/js/dominio/plano.js';
 import { FORMATOS, recorteNoFormato } from '../../public/js/dominio/formatos.js';
 import { ROTEIROS, montarPrompts } from '../../public/js/dominio/roteiros.js';
 import { ColecaoDeQuadros } from '../../public/js/dominio/quadros.js';
@@ -246,4 +246,14 @@ test('gerente: excluir descarta o que ia ser salvo e abre outro projeto', async 
   } finally {
     mock.timers.reset();
   }
+});
+
+test('plano: semente do rosto muda a cada quadro, mesmo quando a cena muda devagar', () => {
+  const cena = [0, 1, 2, 3].map((i) => parametrosDoQuadro(i, 24, ['a'], 42, 6).sementeA);
+  assert.equal(new Set(cena).size, 1); // suavidade 6: a cena usa a mesma semente nesses quadros
+  const rosto = [0, 1, 2, 3].map((i) => sementeDoRosto(42, i));
+  assert.equal(new Set(rosto).size, 4);
+  assert.ok(rosto.every((s) => Number.isInteger(s) && s >= 0 && s < 2 ** 31));
+  assert.equal(sementeDoRosto(42, 5), sementeDoRosto(42, 5)); // reprodutível
+  assert.notEqual(sementeDoRosto(42, 5), sementeDoRosto(43, 5));
 });
