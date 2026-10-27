@@ -5,7 +5,7 @@
 //   progresso { feitos, total, segPorQuadro }
 //   fim       { motivo: 'completo' | 'cancelado' | 'erro', feitos, total, segundos, erro? }
 import { nomeDaCena, parametrosDoQuadro } from '../dominio/plano.js';
-import { alinhar, colarRosto } from '../rosto/composicao.js';
+import { produzirQuadro } from './etapas.js';
 
 export class SessaoDeGeracao extends EventTarget {
   constructor({ cliente, detector }) {
@@ -21,7 +21,8 @@ export class SessaoDeGeracao extends EventTarget {
   }
 
   /**
-   * pedido: { base, prompts, nomes, total, ajustes: { forca, passos, semente, suavidade, rosto, harmonia } }
+   * pedido: { base, prompts, nomes, total,
+   *           ajustes: { forca, passos, semente, suavidade, rosto, harmonia, naturalidade, continuidade } }
    * segPorQuadro: estimativa inicial, usada na contagem regressiva do primeiro quadro
    */
   async executar({ base, prompts, nomes, total, ajustes }, segPorQuadro) {
@@ -30,22 +31,23 @@ export class SessaoDeGeracao extends EventTarget {
     const t0 = performance.now();
     let feitos = 0;
     let erro;
+    let anterior = null; // último quadro pronto, ponto de partida do próximo
 
     try {
       for (let i = 0; i < total && !this.cancelada; i++) {
         const cena = nomeDaCena(i, total, nomes, prompts.length);
         this.emitir('proximo', { indice: i, cena, segundos: segPorQuadro });
 
-        const blob = await this.cliente.gerarQuadro({
-          baseId: base.id,
-          quadro: i,
-          forca: ajustes.forca,
-          passos: ajustes.passos,
-          ...parametrosDoQuadro(i, total, prompts, ajustes.semente, ajustes.suavidade),
+        const canvas = await produzirQuadro({
+          cliente: this.cliente,
+          detector: this.detector,
+          base,
+          anterior,
+          ajustes,
+          indice: i,
+          parametros: parametrosDoQuadro(i, total, prompts, ajustes.semente, ajustes.suavidade),
         });
-        const img = await createImageBitmap(blob);
-        const alinhado = alinhar(img, this.detector.pontos(img, base.lado, base.lado), base);
-        const canvas = colarRosto(alinhado, base, ajustes.rosto, ajustes.harmonia);
+        anterior = canvas;
 
         feitos = i + 1;
         segPorQuadro = (performance.now() - t0) / 1000 / feitos;
