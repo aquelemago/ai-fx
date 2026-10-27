@@ -1,11 +1,12 @@
 // Orquestra uma geração: pede cada quadro ao servidor, alinha, cola o rosto e avisa por eventos.
 // Não mexe no DOM; a interface escuta os eventos:
 //   proximo   { indice, cena, segundos }       quadro que começou a ser gerado e tempo estimado
-//   quadro    { canvas, indice, cena }         quadro pronto
+//   quadro    { canvas, indice, cena, tempos } quadro pronto, com o tempo de cada etapa (ms)
 //   progresso { feitos, total, segPorQuadro }
 //   fim       { motivo: 'completo' | 'cancelado' | 'erro', feitos, total, segundos, erro? }
 //   aviso     { mensagem }                     algo falhou sem interromper a geração
 import { nomeDaCena, parametrosDoQuadro } from '../dominio/plano.js';
+import { criarCronometro, resumoDosTempos } from './cronometro.js';
 import { produzirQuadro } from './etapas.js';
 
 export class SessaoDeGeracao extends EventTarget {
@@ -40,6 +41,7 @@ export class SessaoDeGeracao extends EventTarget {
         const cena = nomeDaCena(i, total, nomes, prompts.length);
         this.emitir('proximo', { indice: i, cena, segundos: segPorQuadro });
 
+        const cronometro = criarCronometro();
         const canvas = await produzirQuadro({
           cliente: this.cliente,
           detector: this.detector,
@@ -49,12 +51,14 @@ export class SessaoDeGeracao extends EventTarget {
           ajustes,
           indice: i,
           parametros: parametrosDoQuadro(i, total, prompts, ajustes.semente, ajustes.suavidade),
+          cronometro,
         });
+        console.info(`quadro ${i + 1}: ${resumoDosTempos(cronometro.tempos, cronometro.total())}`);
         anterior = canvas;
 
         feitos = i + 1;
         segPorQuadro = (performance.now() - t0) / 1000 / feitos;
-        this.emitir('quadro', { canvas, indice: i, cena });
+        this.emitir('quadro', { canvas, indice: i, cena, tempos: cronometro.tempos });
         this.emitir('progresso', { feitos, total, segPorQuadro });
         canvas.convertToBlob({ type: 'image/png' })
           .then((png) => this.cliente.salvarQuadroFinal(projetoId, i, png))

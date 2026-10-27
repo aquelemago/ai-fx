@@ -8,6 +8,10 @@ import { imagemNeutra } from '../ia/imagem.js';
 export const promptDeRosto = (descricao) =>
   `head and shoulders portrait photo of ${descricao}, front view, looking at camera, face in the center, plain background, soft studio light, sharp focus`;
 
+const segundos = (ms) => (ms / 1000).toFixed(1);
+// espera atrás de outro pedido; só aparece no log quando passa de 0,1 s
+const naFila = (ms) => (ms >= 100 ? ` (+${segundos(ms)}s na fila)` : '');
+
 export class ServicoDeGeracao {
   constructor({ gerador, projetos, log = console.log }) {
     this.gerador = gerador;
@@ -34,19 +38,30 @@ export class ServicoDeGeracao {
   // A foto é identificada pelo conteúdo: a mesma foto enviada de novo reaproveita o trabalho
   async prepararBase(buffer) {
     const id = crypto.createHash('sha1').update(buffer).digest('hex').slice(0, 12);
-    if (!this.gerador.temBase(id)) await this.fila.executar(() => this.gerador.definirBase(id, buffer));
+    if (this.gerador.temBase(id)) return id;
+    const t0 = Date.now();
+    let inicio;
+    await this.fila.executar(() => {
+      inicio = Date.now();
+      return this.gerador.definirBase(id, buffer);
+    });
+    this.log(`base ${id} preparada em ${segundos(Date.now() - inicio)}s${naFila(inicio - t0)}`);
     return id;
   }
 
   async gerarQuadro(parametros) {
     if (!this.estado.pronto) throw new ErroModeloIndisponivel(this.estado.erro);
     const t0 = Date.now();
-    const png = await this.fila.executar(() => this.gerador.gerar(parametros));
+    let inicio;
+    const png = await this.fila.executar(() => {
+      inicio = Date.now();
+      return this.gerador.gerar(parametros);
+    });
     const ms = Date.now() - t0;
     if (parametros.projetoId && parametros.quadro !== undefined) {
       await this.projetos.salvarQuadro(parametros.projetoId, 'ia', parametros.quadro, png);
     }
-    this.log(`quadro ${parametros.quadro ?? '-'} gerado em ${(ms / 1000).toFixed(1)}s`);
+    this.log(`quadro ${parametros.quadro ?? '-'} gerado em ${segundos(Date.now() - inicio)}s${naFila(inicio - t0)}`);
     return { png, ms };
   }
 

@@ -11,6 +11,7 @@ import { adiar } from '../../web/src/nucleo/util/adiar.js';
 import { GerenteDeProjetos } from '../../web/src/nucleo/projetos/gerente.js';
 import { formatarTempo } from '../../web/src/nucleo/util/tempo.js';
 import { descricaoAleatoria, sementeAleatoria } from '../../web/src/nucleo/dominio/rostos.js';
+import { criarCronometro, resumoDosTempos } from '../../web/src/nucleo/geracao/cronometro.js';
 import {
   CONFIGURACAO_PADRAO, comCenas, comRoteiro, completarConfiguracao, parteDaMontagem, parteDoPalco, pedidoDeGeracao,
 } from '../../web/src/nucleo/dominio/configuracao.js';
@@ -290,4 +291,15 @@ test('configuração: pedido de geração troca {eu} e exige uma cena', () => {
   assert.equal(p.nomes, undefined);
   assert.equal(p.total, 24);
   assert.throws(() => pedidoDeGeracao(comCenas(CONFIGURACAO_PADRAO, ' ')), /pelo menos uma cena/);
+});
+
+test('cronômetro: cada medida fecha a etapa desde a anterior e soma etapas repetidas', () => {
+  let agora = 1000;
+  const c = criarCronometro(() => agora);
+  agora += 250; c.medir('png');
+  agora += 9000; c.medir('cena');
+  agora += 50; c.medir('png');
+  assert.deepEqual(c.tempos, { png: 300, cena: 9000 });
+  assert.equal(c.total(), 9300);
+  assert.equal(resumoDosTempos(c.tempos, c.total()), 'total 9.3 s · png 0.3 · cena 9.0');
 });
