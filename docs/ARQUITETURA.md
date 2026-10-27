@@ -12,21 +12,24 @@ Cada metade é dividida em camadas. Uma camada só conhece as que estão abaixo 
   ┌────────────────────────────────────────┐     ┌──────────────────────────────────┐
   │ main.js         (monta e liga tudo)    │     │ server.js     (monta e liga tudo)│
   ├────────────────────────────────────────┤     ├──────────────────────────────────┤
-  │ ui/        montagem, palco, tira,      │     │ http/      app, rotas, validacao │
-  │            status        (só DOM)      │     │            (só HTTP)             │
-  ├────────────────────────────────────────┤     ├──────────────────────────────────┤
-  │ geracao/   sessao   (orquestra)        │     │ servicos/  servico-geracao, fila,│
-  │ video/     player, renderizador,       │     │            armazenamento         │
-  │            gravador                    │ ──► │            (regras da aplicação) │
-  │ rosto/     detector, recorte,          │ API ├──────────────────────────────────┤
-  │            composicao, mascara         │     │ ia/        modelos (registro)    │
-  │ api/       cliente  (único fetch)      │     │            sd-turbo/, agendador, │
-  ├────────────────────────────────────────┤     │            ruido, imagem, onnx,  │
-  │ dominio/   roteiros, plano, formatos,  │     │            clip-tokenizer        │
-  │            quadros   (regras puras)    │     ├──────────────────────────────────┤
-  │ util/      dom, tempo, preferencias    │     │ util/      cache-lru             │
-  └────────────────────────────────────────┘     │ config.js  (única leitura do env)│
-                                                 └──────────────────────────────────┘
+  │ ui/        montagem, palco, tira,      │     │ http/      app, rotas,           │
+  │            projetos, status (só DOM)   │     │            rotas-projetos,       │
+  ├────────────────────────────────────────┤     │            validacao, tratar     │
+  │ projetos/  gerente  (projeto aberto,   │     ├──────────────────────────────────┤
+  │            salvamento automático)      │     │ servicos/  servico-geracao,      │
+  │ geracao/   sessao, etapas (orquestra)  │     │            servico-projetos, fila│
+  │ video/     player, renderizador,       │ ──► ├──────────────────────────────────┤
+  │            gravador                    │ API │ projetos/  repositorio (disco),  │
+  │ rosto/     detector, recorte,          │     │            manifesto (esquema)   │
+  │            composicao, mascara         │     ├──────────────────────────────────┤
+  │ api/       cliente  (único fetch)      │     │ ia/        modelos (registro)    │
+  ├────────────────────────────────────────┤     │            sd-turbo/, agendador, │
+  │ dominio/   roteiros, plano, formatos,  │     │            ruido, imagem, onnx,  │
+  │            quadros, projeto, rostos    │     │            clip-tokenizer        │
+  │            (regras puras)              │     ├──────────────────────────────────┤
+  │ util/      dom, tempo, preferencias,   │     │ util/      cache-lru, erros      │
+  │            adiar                       │     │ config.js  (única leitura do env)│
+  └────────────────────────────────────────┘     └──────────────────────────────────┘
 ```
 
 ## Princípios
@@ -43,6 +46,29 @@ Cada metade é dividida em camadas. Uma camada só conhece as que estão abaixo 
    eventos. A tira, o player e os botões escutam sem se conhecer.
 5. **Configuração num lugar só.** Só `src/config.js` lê `process.env`.
 
+## Projetos
+
+Um projeto é uma pasta em `projetos/<id>/` com `projeto.json`, `foto.png`, `quadros/` e `videos/`.
+Nada de um projeto fica fora da pasta dele, então excluir a pasta exclui o projeto inteiro.
+
+- **`src/projetos/repositorio.js`** é o único módulo que lê e escreve nessas pastas:
+  - O manifesto é gravado de forma atômica (arquivo temporário + `rename`).
+  - As alterações passam por uma fila, então gravações simultâneas não se perdem.
+  - Todo caminho é validado contra fuga da pasta de projetos.
+- **`src/projetos/manifesto.js`** define o esquema. Ele tem um número de versão (`versao`) e uma
+  função `migrarManifesto` para quando o formato mudar. A configuração é da página: o servidor só
+  confere a forma dela e não impõe valores padrão.
+- **`public/js/projetos/gerente.js`** guarda o projeto aberto e salva sozinho, com um atraso de
+  600 ms depois da última mudança. Mudanças da montagem e do palco chegando juntas viram um
+  único `PATCH`.
+- **Gerar de novo** chama `DELETE /api/projetos/:id/quadros` antes do primeiro quadro, então
+  não sobra nada de uma geração mais longa.
+
+Para adicionar um campo ao projeto: inclua-o em `validarConfiguracao` (servidor) e em
+`lerConfiguracao`/`aplicarConfiguracao` do painel que é dono dele (página). Se o formato do
+manifesto mudar de um jeito incompatível, suba `VERSAO_DO_MANIFESTO` e trate a versão antiga em
+`migrarManifesto`.
+
 ## Fluxo de um quadro
 
 1. `ui/montagem` → `main.js`: o usuário clica em Gerar.
@@ -54,7 +80,7 @@ Cada metade é dividida em camadas. Uma camada só conhece as que estão abaixo 
    - `ruido` (ruído com semente)
    - a UNet
    - `vae` (latentes → PNG)
-5. O serviço grava `saidas/<id>/ia_NNNN.png` e responde com o PNG.
+5. O serviço grava `projetos/<id>/quadros/ia_NNNN.png` e responde com o PNG.
 6. Na página, `rosto/composicao` alinha os olhos e cola o rosto original. A sessão emite
    `quadro`, a `ColecaoDeQuadros` guarda e a tira e o player se atualizam.
 
@@ -99,7 +125,7 @@ Coloque a regra em `servicos/`, exponha em `http/rotas.js` e acrescente o métod
 ## Testes
 
 ```bash
-npm test               # 38 testes de unidade, menos de 1 segundo
+npm test               # testes de unidade, menos de 1 segundo
 npm run test:modelo    # gera um quadro real e compara com a referência (~1 min)
 ```
 
