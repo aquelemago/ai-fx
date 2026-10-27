@@ -84,7 +84,7 @@ output { color: var(--texto); float: right; letter-spacing: 0; }
 }
 #base.pronta { outline: 4px solid var(--papel); }
 
-input[type=text], input[type=number], textarea {
+input[type=text], input[type=number], textarea, select {
   width: 100%;
   background: var(--cortina);
   color: var(--texto);
@@ -93,7 +93,15 @@ input[type=text], input[type=number], textarea {
   padding: 9px 10px;
   font: inherit;
 }
-input[type=text]:hover, input[type=number]:hover, textarea:hover { border-color: var(--vinho-claro); }
+input[type=text]:hover, input[type=number]:hover, textarea:hover, select:hover { border-color: var(--vinho-claro); }
+:disabled { cursor: default; }
+select { appearance: none; cursor: pointer; padding-right: 30px;
+  background: var(--cortina) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23bca8a1' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center / 10px 6px; }
+.linha-projeto { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.linha-projeto .botao-linha { padding: 0 14px; }
+.cenas input[type=text] { margin-top: 10px; }
+.botao-linha.perigo { margin-top: 10px; color: var(--erro); border-color: var(--vinho); }
+.botao-linha.perigo:hover { border-color: var(--erro); }
 textarea { resize: vertical; margin-top: 10px; font-size: var(--t-rotulo); line-height: 1.5; letter-spacing: .02em; }
 
 .lista { display: grid; gap: 4px; }

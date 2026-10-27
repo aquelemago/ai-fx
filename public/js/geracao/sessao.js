@@ -4,6 +4,7 @@
 //   quadro    { canvas, indice, cena }         quadro pronto
 //   progresso { feitos, total, segPorQuadro }
 //   fim       { motivo: 'completo' | 'cancelado' | 'erro', feitos, total, segundos, erro? }
+//   aviso     { mensagem }                     algo falhou sem interromper a geração
 import { nomeDaCena, parametrosDoQuadro } from '../dominio/plano.js';
 import { produzirQuadro } from './etapas.js';
 
@@ -21,11 +22,11 @@ export class SessaoDeGeracao extends EventTarget {
   }
 
   /**
-   * pedido: { base, prompts, nomes, total,
+   * pedido: { projetoId, base, prompts, nomes, total,
    *           ajustes: { forca, passos, semente, suavidade, rosto, harmonia, naturalidade, continuidade } }
    * segPorQuadro: estimativa inicial, usada na contagem regressiva do primeiro quadro
    */
-  async executar({ base, prompts, nomes, total, ajustes }, segPorQuadro) {
+  async executar({ projetoId, base, prompts, nomes, total, ajustes }, segPorQuadro) {
     this.ativa = true;
     this.cancelada = false;
     const t0 = performance.now();
@@ -34,6 +35,7 @@ export class SessaoDeGeracao extends EventTarget {
     let anterior = null; // último quadro pronto, ponto de partida do próximo
 
     try {
+      await this.cliente.limparQuadros(projetoId); // nada de sobras de uma geração anterior
       for (let i = 0; i < total && !this.cancelada; i++) {
         const cena = nomeDaCena(i, total, nomes, prompts.length);
         this.emitir('proximo', { indice: i, cena, segundos: segPorQuadro });
@@ -42,6 +44,7 @@ export class SessaoDeGeracao extends EventTarget {
           cliente: this.cliente,
           detector: this.detector,
           base,
+          projetoId,
           anterior,
           ajustes,
           indice: i,
@@ -53,7 +56,9 @@ export class SessaoDeGeracao extends EventTarget {
         segPorQuadro = (performance.now() - t0) / 1000 / feitos;
         this.emitir('quadro', { canvas, indice: i, cena });
         this.emitir('progresso', { feitos, total, segPorQuadro });
-        canvas.convertToBlob({ type: 'image/png' }).then((png) => this.cliente.salvarQuadro(base.id, i, png));
+        canvas.convertToBlob({ type: 'image/png' })
+          .then((png) => this.cliente.salvarQuadroFinal(projetoId, i, png))
+          .catch((e) => this.emitir('aviso', { mensagem: `O quadro ${i + 1} não foi salvo no projeto: ${e.message}` }));
       }
     } catch (e) {
       erro = e;

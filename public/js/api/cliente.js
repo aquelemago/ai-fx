@@ -55,9 +55,60 @@ export class ClienteApi {
     return resp.blob();
   }
 
-  /** Guarda o quadro final em saidas/<id>/final_XXXX.png. Falhas aqui não interrompem nada. */
-  salvarQuadro(baseId, indice, png) {
-    return this.pedir(`/salvar/${baseId}/${indice}`, { method: 'POST', headers: { 'Content-Type': 'image/png' }, body: png })
-      .catch(() => {});
+  // ---------- projetos ----------
+
+  async json(caminho, metodo = 'GET', corpo) {
+    const opcoes = { method: metodo };
+    if (corpo !== undefined) {
+      opcoes.headers = { 'Content-Type': 'application/json' };
+      opcoes.body = JSON.stringify(corpo);
+    }
+    const resp = await this.pedir(caminho, opcoes);
+    return resp.status === 204 ? null : resp.json();
+  }
+
+  listarProjetos() {
+    return this.json('/projetos');
+  }
+
+  criarProjeto(nome) {
+    return this.json('/projetos', 'POST', { nome });
+  }
+
+  lerProjeto(id) {
+    return this.json(`/projetos/${id}`);
+  }
+
+  /** mudancas: { nome?, configuracao?, quadros? } */
+  atualizarProjeto(id, mudancas) {
+    return this.json(`/projetos/${id}`, 'PATCH', mudancas);
+  }
+
+  excluirProjeto(id) {
+    return this.json(`/projetos/${id}`, 'DELETE');
+  }
+
+  /** Grava a foto no projeto e devolve { baseId, manifesto }. */
+  async definirFotoDoProjeto(id, png) {
+    const resp = await this.pedir(`/projetos/${id}/foto`, { method: 'PUT', headers: { 'Content-Type': 'image/png' }, body: png });
+    return resp.json();
+  }
+
+  limparQuadros(id) {
+    return this.json(`/projetos/${id}/quadros`, 'DELETE');
+  }
+
+  salvarQuadroFinal(id, indice, png) {
+    return this.pedir(`/projetos/${id}/quadros/${indice}`, { method: 'PUT', headers: { 'Content-Type': 'image/png' }, body: png });
+  }
+
+  async salvarVideo(id, blob) {
+    const resp = await this.pedir(`/projetos/${id}/videos`, { method: 'POST', headers: { 'Content-Type': blob.type }, body: blob });
+    return (await resp.json()).arquivo;
+  }
+
+  /** Endereço de um arquivo do projeto (foto.png, quadros/final_0000.png...). */
+  urlDoArquivo(id, caminho) {
+    return `/arquivos/${id}/${caminho}`;
   }
 }
