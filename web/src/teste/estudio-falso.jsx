@@ -17,7 +17,7 @@ export function criarEstudioFalso(estado = {}) {
     cliente: {}, detector: { pronto: Promise.resolve() }, quadros: new ColecaoDeQuadros(),
     sessao: new EventTarget(), gerente: new EventTarget(),
   });
-  for (const acao of ACOES) vi.spyOn(estudio, acao).mockImplementation(() => {});
+  for (const acao of ACOES) vi.spyOn(estudio, acao).mockImplementation(async () => undefined);
   estudio.mudar(estado);
   return estudio;
 }

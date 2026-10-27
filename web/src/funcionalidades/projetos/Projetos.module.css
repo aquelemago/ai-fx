@@ -1,0 +1,5 @@
+.linha { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.novo { padding: 0 14px; }
+.recolhivel { margin-top: 12px; }
+.nome { margin-top: 10px; }
+.excluir { margin-top: 10px; }
