@@ -4,7 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { criarApp } from '../../src/http/app.js';
-import { validarPedidoDeQuadro } from '../../src/http/validacao.js';
+import { validarPedidoDeQuadro, validarPedidoDeRosto } from '../../src/http/validacao.js';
 import { ArmazenamentoDeQuadros } from '../../src/servicos/armazenamento.js';
 import { ServicoDeGeracao } from '../../src/servicos/servico-geracao.js';
 import { GeradorFalso, PNG_FALSO } from '../apoio/gerador-falso.js';
@@ -25,6 +25,13 @@ test('validação: recusa entradas erradas', () => {
   assert.throws(() => validarPedidoDeQuadro({ ...ok, forca: 'muita' }), /forca/);
   assert.throws(() => validarPedidoDeQuadro({ ...ok, sementeA: 1.5 }), /sementeA/);
   assert.throws(() => validarPedidoDeQuadro({ ...ok, promptA: 'a'.repeat(1001) }), /1000/);
+});
+
+test('validação: pedido de rosto com padrões e limites', () => {
+  assert.deepEqual(validarPedidoDeRosto({}), { descricao: 'a person', semente: 0 });
+  assert.deepEqual(validarPedidoDeRosto({ descricao: 'a man', semente: 9 }), { descricao: 'a man', semente: 9 });
+  assert.throws(() => validarPedidoDeRosto({ descricao: 'a'.repeat(301) }), /300/);
+  assert.throws(() => validarPedidoDeRosto({ semente: 'x' }), /semente/);
 });
 
 let servidor, url, servico, dirSaidas;
@@ -75,6 +82,13 @@ test('API: 400 para pedido inválido e 409 para foto que o servidor não tem', a
   assert.equal((await postJson('/api/gerar', { baseId: 'ffffffffffff', promptA: 'x' })).status, 409);
   const semCorpo = await fetch(`${url}/api/salvar/ffffffffffff/0`, { method: 'POST' });
   assert.equal(semCorpo.status, 400);
+});
+
+test('API: gera um rosto novo', async () => {
+  const r = await postJson('/api/rosto', { descricao: 'a woman with red hair', semente: 3 });
+  assert.equal(r.status, 200);
+  assert.equal(r.headers.get('content-type'), 'image/png');
+  assert.equal((await postJson('/api/rosto', { semente: 1.5 })).status, 400);
 });
 
 test('API: serve a página', async () => {

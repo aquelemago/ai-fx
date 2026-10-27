@@ -37,6 +37,14 @@ export function validarNumeroDoQuadro(v) {
   return n;
 }
 
+/** Pedido de um rosto novo: descrição da pessoa (em inglês) e semente. */
+export function validarPedidoDeRosto(corpo) {
+  if (!corpo || typeof corpo !== 'object') throw new ErroDeValidacao('corpo do pedido ausente');
+  const descricao = corpo.descricao === undefined ? 'a person' : texto(corpo.descricao, 'descricao');
+  if (descricao.length > 300) throw new ErroDeValidacao('descricao passa de 300 caracteres');
+  return { descricao, semente: inteiro(corpo.semente, 'semente', 0) };
+}
+
 /** Pedido de geração de um quadro, já normalizado com os valores padrão. */
 export function validarPedidoDeQuadro(corpo) {
   if (!corpo || typeof corpo !== 'object') throw new ErroDeValidacao('corpo do pedido ausente');

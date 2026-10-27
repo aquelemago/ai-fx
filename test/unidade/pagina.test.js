@@ -7,6 +7,7 @@ import { ROTEIROS, montarPrompts } from '../../public/js/dominio/roteiros.js';
 import { ColecaoDeQuadros } from '../../public/js/dominio/quadros.js';
 import { ordenarContorno, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../public/js/rosto/geometria.js';
 import { formatarTempo } from '../../public/js/util/tempo.js';
+import { descricaoAleatoria, sementeAleatoria } from '../../public/js/dominio/rostos.js';
 
 test('plano: primeiro e último quadro caem exatamente na primeira e na última cena', () => {
   const prompts = ['a', 'b', 'c'];
@@ -106,4 +107,29 @@ test('tempo: formata segundos e minutos', () => {
   assert.equal(formatarTempo(0.2), '1 s');
   assert.equal(formatarTempo(42), '42 s');
   assert.equal(formatarTempo(245), '4 min 05 s');
+});
+
+// gerador de números com semente, para o sorteio ser reprodutível no teste
+function aleatorioFixo(semente) {
+  let s = semente;
+  return () => ((s = (s * 1664525 + 1013904223) % 2 ** 32) / 2 ** 32);
+}
+
+test('rostos: descrição sorteada é coerente e varia', () => {
+  const descricoes = new Set();
+  for (let i = 0; i < 200; i++) {
+    const d = descricaoAleatoria(aleatorioFixo(i));
+    assert.match(d, /^a (young|adult|middle-aged|elderly) (man|woman) with /);
+    if (d.includes('elderly')) assert.match(d, /gray/);
+    if (d.includes('woman')) assert.doesNotMatch(d, /beard|mustache/);
+    descricoes.add(d);
+  }
+  assert.ok(descricoes.size > 30, `só ${descricoes.size} descrições diferentes`);
+});
+
+test('rostos: semente é inteiro positivo de 31 bits', () => {
+  for (const r of [0, 0.5, 0.999999]) {
+    const s = sementeAleatoria(() => r);
+    assert.ok(Number.isInteger(s) && s >= 0 && s < 2 ** 31);
+  }
 });

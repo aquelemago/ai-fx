@@ -156,6 +156,7 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 18px; background: var
 .botao-linha:disabled { color: var(--texto-2); border-color: var(--vinho); cursor: default; }
 .botao-linha svg, .icone svg { width: 18px; height: 18px; }
 .foto .botao-linha { position: relative; }
+.acoes-foto { display: flex; flex-wrap: wrap; gap: 8px; }
 
 /* ---------- palco ---------- */
 .palco {

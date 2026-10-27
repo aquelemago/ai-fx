@@ -6,7 +6,7 @@ import path from 'node:path';
 import { CacheLru } from '../../src/util/cache-lru.js';
 import { FilaSerial } from '../../src/servicos/fila.js';
 import { ArmazenamentoDeQuadros } from '../../src/servicos/armazenamento.js';
-import { ErroModeloIndisponivel, ServicoDeGeracao } from '../../src/servicos/servico-geracao.js';
+import { ErroModeloIndisponivel, ServicoDeGeracao, promptDeRosto } from '../../src/servicos/servico-geracao.js';
 import { criarGerador, modelosDisponiveis } from '../../src/ia/modelos.js';
 import { GeradorFalso } from '../apoio/gerador-falso.js';
 
@@ -88,6 +88,21 @@ test('serviço: gera e grava a saída crua quando o quadro tem número', async (
   const baseId = await s.prepararBase(Buffer.from('foto'));
   const { png } = await s.gerarQuadro({ baseId, quadro: 3, promptA: 'x' });
   assert.deepEqual(fs.readFileSync(path.join(dir, baseId, 'ia_0003.png')), png);
+});
+
+test('serviço: gera rosto do zero com força máxima a partir de uma imagem neutra', async () => {
+  const gerador = new GeradorFalso();
+  const s = new ServicoDeGeracao({ gerador, armazenamento: null, log: () => {} });
+  await assert.rejects(s.gerarRosto({ descricao: 'a man', semente: 1 }), ErroModeloIndisponivel);
+  await s.iniciar();
+  await s.gerarRosto({ descricao: 'a man with glasses', semente: 5 });
+  await s.gerarRosto({ descricao: 'a woman', semente: 6 });
+  const [p1, p2] = gerador.pedidos;
+  assert.equal(p1.forca, 1);
+  assert.equal(p1.sementeA, 5);
+  assert.equal(p1.promptA, promptDeRosto('a man with glasses'));
+  assert.equal(p1.baseId, p2.baseId); // a imagem neutra é preparada uma vez só
+  assert.equal(gerador.basesDefinidas, 1);
 });
 
 test('serviço: status informa modelo e erro de carga', async () => {

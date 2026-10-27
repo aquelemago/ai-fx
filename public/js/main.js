@@ -3,6 +3,7 @@
 import { ClienteApi, ErroDaApi } from './api/cliente.js';
 import { ColecaoDeQuadros } from './dominio/quadros.js';
 import { SessaoDeGeracao } from './geracao/sessao.js';
+import { descricaoAleatoria, sementeAleatoria } from './dominio/rostos.js';
 import { DetectorDeRosto } from './rosto/detector.js';
 import { centroDosOlhos } from './rosto/geometria.js';
 import { ErroDeRosto, prepararFotoBase } from './rosto/recorte.js';
@@ -25,6 +26,7 @@ const renderizador = new Renderizador($('player'));
 let base = null; // foto base: { id, canvas, pontos, mascara, lado }
 let servidorPronto = false;
 let gravando = false;
+let gerandoRosto = false;
 
 // ---------- peças da tela ----------
 ligarSaidas({ fps: (v) => `${v} q/s`, transicao: (v) => `${Math.round(v * 100)}%` });
@@ -48,6 +50,7 @@ const player = new Player({
 
 const montagem = new PainelDeMontagem({
   aoEscolherFoto: escolherFoto,
+  aoGerarRosto: gerarRostoAleatorio,
   aoGerar: gerar,
   aoParar: () => {
     sessao.cancelar();
@@ -56,27 +59,63 @@ const montagem = new PainelDeMontagem({
 });
 
 function atualizarControles() {
-  montagem.habilitarGerar(servidorPronto && Boolean(base));
+  montagem.habilitarGerar(servidorPronto && Boolean(base) && !gerandoRosto);
+  montagem.habilitarRosto(servidorPronto && !sessao.ativa && !gerandoRosto);
   palco.habilitar(quadros.ativos().length, gravando);
 }
 quadros.addEventListener('mudou', atualizarControles);
 
 // ---------- foto ----------
+// Recorta o rosto, envia ao servidor e passa a usar a foto como base. Lança erro se não der.
+async function usarFoto(arquivo) {
+  const foto = await prepararFotoBase(arquivo, detector, $('base'));
+  const png = await new Promise((r) => $('base').toBlob(r, 'image/png'));
+  base = { ...foto, id: await cliente.enviarBase(png) };
+  renderizador.rostoX = centroDosOlhos(base.pontos).x;
+  palco.esconderVazio();
+}
+
 async function escolherFoto(arquivo) {
   montagem.infoFoto('Procurando o rosto…');
   try {
-    const foto = await prepararFotoBase(arquivo, detector, $('base'));
-    const png = await new Promise((r) => $('base').toBlob(r, 'image/png'));
-    base = { ...foto, id: await cliente.enviarBase(png) };
-    renderizador.rostoX = centroDosOlhos(base.pontos).x;
+    await usarFoto(arquivo);
     montagem.mostrarFotoPronta(arquivo.name);
-    palco.esconderVazio();
   } catch (e) {
     montagem.infoFoto(e instanceof ErroDeRosto ? e.message
       : e instanceof ErroDaApi ? `O servidor recusou a foto: ${e.message}`
         : `Não consegui abrir essa foto: ${e.message}`);
   }
   atualizarControles();
+}
+
+// A IA cria uma pessoa nova; se o detector não achar um rosto bom, tenta outra semente
+const TENTATIVAS_DE_ROSTO = 3;
+async function gerarRostoAleatorio() {
+  gerandoRosto = true;
+  atualizarControles();
+  try {
+    for (let tentativa = 1; tentativa <= TENTATIVAS_DE_ROSTO; tentativa++) {
+      const descricao = descricaoAleatoria();
+      const semente = sementeAleatoria();
+      montagem.infoFoto(tentativa === 1 ? 'A IA está criando um rosto…' : 'Esse não ficou bom, tentando outro…');
+      const imagem = await cliente.gerarRosto({ descricao, semente });
+      try {
+        await usarFoto(new File([imagem], `rosto-ia-${semente}.png`, { type: 'image/png' }));
+      } catch (e) {
+        if (e instanceof ErroDeRosto && tentativa < TENTATIVAS_DE_ROSTO) continue;
+        throw e;
+      }
+      montagem.definirDescricao(descricao);
+      montagem.mostrarFotoPronta(`rosto-ia-${semente}.png`);
+      montagem.infoFoto(`Rosto criado pela IA: ${descricao}.`);
+      return;
+    }
+  } catch (e) {
+    montagem.infoFoto(`Não consegui criar um rosto: ${e.message}`);
+  } finally {
+    gerandoRosto = false;
+    atualizarControles();
+  }
 }
 
 // ---------- geração ----------
@@ -92,8 +131,8 @@ function gerar() {
   palco.esconderDownload();
   montagem.definirGerando(true);
   montagem.infoGeracao('');
-  atualizarControles();
   sessao.executar({ base, ...pedido }, montagem.segPorQuadro);
+  atualizarControles();
 }
 
 sessao.addEventListener('proximo', ({ detail: d }) => tira.mostrarProximo(d.indice, d.cena, d.segundos));

@@ -1,7 +1,7 @@
 // Rotas da API. Só traduzem HTTP ↔ serviço: validam a entrada, chamam o serviço e
 // convertem erros em códigos de status. Nenhuma regra de negócio mora aqui.
 import express from 'express';
-import { validarIdFoto, validarNumeroDoQuadro, validarPedidoDeQuadro } from './validacao.js';
+import { validarIdFoto, validarNumeroDoQuadro, validarPedidoDeQuadro, validarPedidoDeRosto } from './validacao.js';
 
 const STATUS_POR_CODIGO = {
   VALIDACAO: 400,
@@ -32,6 +32,11 @@ export function criarRotasDaApi(servico, { log = console.error } = {}) {
 
   api.post('/gerar', express.json(), tratar(async (req, res) => {
     const { png, ms } = await servico.gerarQuadro(validarPedidoDeQuadro(req.body));
+    res.set('X-Tempo-Ms', String(ms)).type('png').send(png);
+  }, log));
+
+  api.post('/rosto', express.json(), tratar(async (req, res) => {
+    const { png, ms } = await servico.gerarRosto(validarPedidoDeRosto(req.body));
     res.set('X-Tempo-Ms', String(ms)).type('png').send(png);
   }, log));
 
