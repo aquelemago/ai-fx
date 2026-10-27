@@ -58,6 +58,8 @@ export class PainelDeMontagem {
         suavidade: valorNumerico('suavidade'),
         rosto: valorNumerico('rosto'),
         harmonia: valorNumerico('harmonia'),
+        naturalidade: valorNumerico('naturalidade'),
+        continuidade: valorNumerico('continuidade'),
         semente: valorNumerico('semente'),
       },
     };

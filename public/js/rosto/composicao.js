@@ -12,6 +12,16 @@ export function alinhar(img, pts, base) {
   return out;
 }
 
+/** Mistura duas imagens do mesmo tamanho: peso 0 = só `a`, 1 = só `b`. */
+export function misturarImagens(a, b, peso, lado) {
+  const out = new OffscreenCanvas(lado, lado);
+  const ctx = out.getContext('2d');
+  ctx.drawImage(a, 0, 0, lado, lado);
+  ctx.globalAlpha = peso;
+  ctx.drawImage(b, 0, 0, lado, lado);
+  return out;
+}
+
 /** Cola o rosto original por cima, ajustando a cor dele para a luz do quadro gerado. */
 export function colarRosto(quadro, base, preservar, harmonia) {
   if (preservar <= 0) return quadro;

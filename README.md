@@ -49,7 +49,11 @@ então a imagem muda aos poucos em vez de pular.
   Acima de ~0,92 a pose muda e o rosto colado não encaixa mais.
 - **Passos**: cada passo leva ~8 s num i5/i7 de notebook. 1 já fica bom; 2 dá mais detalhe.
 - **Suavidade**: 1 = ruído novo a cada quadro (tremido, cara de time lapse real).
-- **Preservar rosto**: 1 = seu rosto original intacto; 0 = só o que a IA gerou.
+- **Naturalidade do rosto**: depois de colar seu rosto como guia, a IA repassa o quadro com
+  força baixa e refaz o rosto na luz da cena, como uma foto de outro dia. 0 deixa o rosto
+  fixo; 0,25–0,35 varia sem perder a identidade. Ligada, cada quadro leva ~2x o tempo.
+- **Continuidade**: quanto cada quadro parte do anterior (roupa, fundo e luz evoluem aos poucos).
+- **Preservar rosto**: força do rosto original usado como guia (antes do repasse da naturalidade).
 - **Harmonizar cor**: ajusta a cor do rosto colado pra combinar com a luz da cena.
 
 ## Saídas
