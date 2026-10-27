@@ -1,5 +1,5 @@
 // Indicador do estado do servidor/modelo no topo da coluna de montagem.
-import { $ } from '../util/dom.js';
+import { $ } from '../dom.js';
 
 export function acompanharServidor(cliente, aoMudar) {
   const mostrar = (texto, classe = '', detalhe = '') => {

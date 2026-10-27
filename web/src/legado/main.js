@@ -1,24 +1,24 @@
 // Ponto de entrada da página: cria as peças e liga os eventos de uma às outras.
 // Nenhum outro módulo conhece todos; se precisar trocar uma peça, é aqui.
-import { ClienteApi, ErroDaApi } from './api/cliente.js';
-import { arquivoDoQuadroFinal } from './dominio/projeto.js';
-import { ColecaoDeQuadros } from './dominio/quadros.js';
-import { descricaoAleatoria, sementeAleatoria } from './dominio/rostos.js';
-import { SessaoDeGeracao } from './geracao/sessao.js';
-import { GerenteDeProjetos } from './projetos/gerente.js';
-import { DetectorDeRosto } from './rosto/detector.js';
-import { centroDosOlhos } from './rosto/geometria.js';
-import { ErroDeRosto, prepararFotoBase } from './rosto/recorte.js';
+import { ClienteApi, ErroDaApi } from '../nucleo/api/cliente.js';
+import { arquivoDoQuadroFinal } from '../nucleo/dominio/projeto.js';
+import { ColecaoDeQuadros } from '../nucleo/dominio/quadros.js';
+import { descricaoAleatoria, sementeAleatoria } from '../nucleo/dominio/rostos.js';
+import { SessaoDeGeracao } from '../nucleo/geracao/sessao.js';
+import { GerenteDeProjetos } from '../nucleo/projetos/gerente.js';
+import { DetectorDeRosto } from '../nucleo/rosto/detector.js';
+import { centroDosOlhos } from '../nucleo/rosto/geometria.js';
+import { ErroDeRosto, prepararFotoBase } from '../nucleo/rosto/recorte.js';
 import { PainelDeMontagem } from './ui/montagem.js';
 import { Palco, ligarSaidas } from './ui/palco.js';
 import { BarraDeProjetos } from './ui/projetos.js';
 import { acompanharServidor } from './ui/status.js';
 import { Tira } from './ui/tira.js';
-import { $ } from './util/dom.js';
-import { formatarTempo } from './util/tempo.js';
-import { gravarCanvas } from './video/gravador.js';
-import { Player } from './video/player.js';
-import { Renderizador } from './video/renderizador.js';
+import { $ } from './dom.js';
+import { formatarTempo } from '../nucleo/util/tempo.js';
+import { gravarCanvas } from '../nucleo/video/gravador.js';
+import { Player } from '../nucleo/video/player.js';
+import { Renderizador } from '../nucleo/video/renderizador.js';
 
 const cliente = new ClienteApi();
 const detector = new DetectorDeRosto();

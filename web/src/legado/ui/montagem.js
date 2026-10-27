@@ -1,10 +1,10 @@
 // Coluna de montagem: foto, descrição, roteiro, quantidade de quadros, botão Gerar e ajustes finos.
 // A configuração pertence ao projeto aberto: a tela avisa cada mudança (aoMudarConfiguracao) e
 // aplica a configuração de um projeto quando ele é aberto (aplicarConfiguracao).
-import { PERSONALIZADO, ROTEIROS, montarPrompts } from '../dominio/roteiros.js';
-import { $, marcarOpcao, opcaoMarcada, valorNumerico } from '../util/dom.js';
-import { lerPreferencia, salvarPreferencia } from '../util/preferencias.js';
-import { formatarTempo } from '../util/tempo.js';
+import { PERSONALIZADO, ROTEIROS, montarPrompts } from '../../nucleo/dominio/roteiros.js';
+import { $, marcarOpcao, opcaoMarcada, valorNumerico } from '../dom.js';
+import { lerPreferencia, salvarPreferencia } from '../../nucleo/util/preferencias.js';
+import { formatarTempo } from '../../nucleo/util/tempo.js';
 
 const ROTEIRO_PADRAO = 'Um dia inteiro';
 const AJUSTES = ['forca', 'passos', 'suavidade', 'rosto', 'harmonia', 'naturalidade', 'continuidade', 'semente'];

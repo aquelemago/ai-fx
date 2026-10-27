@@ -1,5 +1,5 @@
 // Detector de rosto (MediaPipe Face Landmarker, rodando local no navegador).
-import { FaceLandmarker, FilesetResolver } from '/mediapipe/vision_bundle.mjs';
+import { FaceLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { ordenarContorno } from './geometria.js';
 
 export const CONTORNO_DO_ROSTO = ordenarContorno(FaceLandmarker.FACE_LANDMARKS_FACE_OVAL);

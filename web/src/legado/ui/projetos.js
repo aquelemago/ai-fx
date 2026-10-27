@@ -1,5 +1,5 @@
 // Barra de projeto no topo da coluna de montagem: escolher, criar, renomear e excluir.
-import { $ } from '../util/dom.js';
+import { $ } from '../dom.js';
 
 export class BarraDeProjetos {
   /** aoAbrir(id), aoNovo(), aoRenomear(nome), aoExcluir() */

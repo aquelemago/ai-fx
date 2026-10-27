@@ -1,16 +1,16 @@
-// Módulos puros da página (public/js/dominio e geometria do rosto), testados no Node.
+// Módulos puros da página (web/src/nucleo: domínio e geometria do rosto), testados no Node.
 import { mock, test } from 'node:test';
 import assert from 'node:assert/strict';
-import { nomeDaCena, parametrosDoQuadro, sementeDoRosto } from '../../public/js/dominio/plano.js';
-import { FORMATOS, recorteNoFormato } from '../../public/js/dominio/formatos.js';
-import { ROTEIROS, montarPrompts } from '../../public/js/dominio/roteiros.js';
-import { ColecaoDeQuadros } from '../../public/js/dominio/quadros.js';
-import { ordenarContorno, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../public/js/rosto/geometria.js';
-import { arquivoDoQuadroFinal, nomeDoNovoProjeto, resumoDosQuadros } from '../../public/js/dominio/projeto.js';
-import { adiar } from '../../public/js/util/adiar.js';
-import { GerenteDeProjetos } from '../../public/js/projetos/gerente.js';
-import { formatarTempo } from '../../public/js/util/tempo.js';
-import { descricaoAleatoria, sementeAleatoria } from '../../public/js/dominio/rostos.js';
+import { nomeDaCena, parametrosDoQuadro, sementeDoRosto } from '../../web/src/nucleo/dominio/plano.js';
+import { FORMATOS, recorteNoFormato } from '../../web/src/nucleo/dominio/formatos.js';
+import { ROTEIROS, montarPrompts } from '../../web/src/nucleo/dominio/roteiros.js';
+import { ColecaoDeQuadros } from '../../web/src/nucleo/dominio/quadros.js';
+import { ordenarContorno, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../web/src/nucleo/rosto/geometria.js';
+import { arquivoDoQuadroFinal, nomeDoNovoProjeto, resumoDosQuadros } from '../../web/src/nucleo/dominio/projeto.js';
+import { adiar } from '../../web/src/nucleo/util/adiar.js';
+import { GerenteDeProjetos } from '../../web/src/nucleo/projetos/gerente.js';
+import { formatarTempo } from '../../web/src/nucleo/util/tempo.js';
+import { descricaoAleatoria, sementeAleatoria } from '../../web/src/nucleo/dominio/rostos.js';
 
 test('plano: primeiro e último quadro caem exatamente na primeira e na última cena', () => {
   const prompts = ['a', 'b', 'c'];

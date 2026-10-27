@@ -16,7 +16,9 @@ export function lerConfig(env = process.env) {
     modelo: env.MODELO || 'sd-turbo',
     dirModelos,
     dirProjetos: env.PROJETOS ? path.resolve(env.PROJETOS) : path.join(raiz, 'projetos'),
-    dirPublico: path.join(raiz, 'public'),
+    dirWeb: path.join(raiz, 'web'),
+    // produção serve a página já montada (npm run build); desenvolvimento passa pelo Vite
+    desenvolvimento: env.NODE_ENV !== 'production',
     dirMediapipe: [
       path.join(raiz, 'node_modules', '@mediapipe', 'tasks-vision'),
       path.join(dirModelos, 'mediapipe'),

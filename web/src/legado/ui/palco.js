@@ -1,7 +1,7 @@
 // Palco: a prévia e a barra de reprodução (tocar, ritmo, transição, formato, gravar, baixar).
 // Formato e ritmo pertencem ao projeto aberto, como a configuração da montagem.
-import { FORMATOS, FORMATO_PADRAO } from '../dominio/formatos.js';
-import { $, marcarOpcao, opcaoMarcada, valorNumerico } from '../util/dom.js';
+import { FORMATOS, FORMATO_PADRAO } from '../../nucleo/dominio/formatos.js';
+import { $, marcarOpcao, opcaoMarcada, valorNumerico } from '../dom.js';
 
 export class Palco {
   /** aoTocar(), aoMudarFormato(formato), aoGravar(), aoMudarConfiguracao({ formato, ritmo }) */

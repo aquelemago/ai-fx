@@ -1,6 +1,6 @@
 // A tira de cópias: uma por quadro, a mais nova no topo, logo abaixo da fenda.
 // Escuta a coleção de quadros; quem gera não precisa saber que a tira existe.
-import { $ } from '../util/dom.js';
+import { $ } from '../dom.js';
 
 const doisDigitos = (n) => String(n).padStart(2, '0');
 
