@@ -1,0 +1,20 @@
+@layer ds {
+  .campo {
+    width: 100%;
+    background: var(--cortina);
+    color: var(--texto);
+    border: 2px solid var(--vinho);
+    border-radius: 0;
+    padding: 9px 10px;
+    font: inherit;
+  }
+  .campo:hover { border-color: var(--vinho-claro); }
+  .selecao {
+    appearance: none; cursor: pointer; padding-right: 30px;
+    background: var(--cortina) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23bca8a1' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 11px center / 10px 6px;
+  }
+  .area { resize: vertical; font-size: var(--t-rotulo); line-height: 1.5; letter-spacing: .02em; }
+
+  .arquivo { position: relative; }
+  .arquivo input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+}

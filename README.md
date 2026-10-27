@@ -85,9 +85,16 @@ Versões antigas gravavam em `saidas/`. Essa pasta não é mais usada e pode ser
 ## Código e testes
 
 A organização em módulos e o passo a passo para adicionar modelo, roteiro, formato ou ajuste
-estão em [docs/ARQUITETURA.md](docs/ARQUITETURA.md).
+estão em [docs/ARQUITETURA.md](docs/ARQUITETURA.md). A página é React (Vite) e as regras
+visuais da cabine estão em [DESIGN.md](DESIGN.md).
+
+`npm start` serve a página pelo Vite, com recarga na hora. Para usar a página já montada:
 
 ```bash
-npm test               # testes de unidade (menos de 1 s)
+npm run producao   # vite build + NODE_ENV=production node server.js
+```
+
+```bash
+npm test               # testes de unidade (Node) e de componente (Vitest), ~5 s
 npm run test:modelo    # gera um quadro com o modelo real e compara com a referência (~1 min)
 ```

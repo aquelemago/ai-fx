@@ -1,0 +1,3 @@
+@layer ds {
+  .nota { margin: 6px 0 0; color: var(--texto-2); }
+}

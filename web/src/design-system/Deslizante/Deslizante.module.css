@@ -1,0 +1,10 @@
+@layer ds {
+  .deslizante { display: block; color: var(--texto-2); }
+  .valor { color: var(--texto); float: right; letter-spacing: 0; }
+
+  .faixa { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; margin: 4px 0 0; cursor: pointer; }
+  .faixa::-webkit-slider-runnable-track { height: 2px; background: var(--vinho-claro); }
+  .faixa::-moz-range-track { height: 2px; background: var(--vinho-claro); }
+  .faixa::-webkit-slider-thumb { -webkit-appearance: none; width: 12px; height: 18px; margin-top: -8px; background: var(--papel); border: 0; border-radius: 0; }
+  .faixa::-moz-range-thumb { width: 12px; height: 18px; background: var(--papel); border: 0; border-radius: 0; }
+}

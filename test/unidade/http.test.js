@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { criarApp } from '../../src/http/app.js';
+import { criarPagina } from '../../src/http/pagina.js';
 import { validarPedidoDeQuadro, validarPedidoDeRosto } from '../../src/http/validacao.js';
 import { RepositorioDeProjetos } from '../../src/projetos/repositorio.js';
 import { ServicoDeProjetos } from '../../src/servicos/servico-projetos.js';
@@ -42,7 +43,12 @@ before(async () => {
   const repositorio = new RepositorioDeProjetos(dirProjetos);
   servico = new ServicoDeGeracao({ gerador: new GeradorFalso(), projetos: repositorio, log: () => {} });
   const projetos = new ServicoDeProjetos({ repositorio, geracao: servico });
-  const app = criarApp({ servico, projetos, dirPublico: path.resolve('public'), dirProjetos, log: () => {} });
+  // página já montada (como em produção), numa pasta web/dist de mentira
+  const dirWeb = fs.mkdtempSync(path.join(os.tmpdir(), 'timelapse-web-'));
+  fs.mkdirSync(path.join(dirWeb, 'dist'));
+  fs.writeFileSync(path.join(dirWeb, 'dist', 'index.html'), '<script type="module" src="/assets/index.js"></script>');
+  const pagina = await criarPagina({ dirWeb, desenvolvimento: false });
+  const app = criarApp({ servico, projetos, pagina, dirProjetos, log: () => {} });
   await new Promise((r) => (servidor = app.listen(0, r)));
   url = `http://127.0.0.1:${servidor.address().port}`;
 });
@@ -85,10 +91,11 @@ test('API: gera um rosto novo', async () => {
   assert.equal((await postJson('/api/rosto', { semente: 1.5 })).status, 400);
 });
 
-test('API: serve a página', async () => {
+test('API: serve a página montada, sem engolir as rotas da API', async () => {
   const r = await fetch(url + '/');
   assert.equal(r.status, 200);
-  assert.match(await r.text(), /js\/main\.js/);
+  assert.match(await r.text(), /assets\/index\.js/);
+  assert.equal((await fetch(url + '/api/nao-existe')).status, 404);
 });
 
 // ---------- projetos ----------

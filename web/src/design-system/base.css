@@ -1,0 +1,18 @@
+/* Elementos soltos: página, seleção, barra de rolagem e foco. */
+@layer base {
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { color-scheme: dark; }
+  body {
+    margin: 0;
+    background: var(--cortina);
+    color: var(--texto);
+    font: 500 var(--t-corpo)/1.35 var(--fonte);
+    font-variant-numeric: tabular-nums;
+  }
+  ::selection { background: var(--papel); color: var(--tinta); }
+  * { scrollbar-width: thin; scrollbar-color: var(--vinho-claro) transparent; }
+  :focus-visible { outline: 2px solid var(--flash); outline-offset: 2px; }
+  :disabled { cursor: default; }
+  h1, h2 { margin: 0; }
+}

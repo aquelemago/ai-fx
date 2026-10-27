@@ -1,0 +1,17 @@
+@layer ds {
+  /* lado a lado, do mesmo tamanho */
+  .segmentos { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; }
+  /* um embaixo do outro, com um detalhe à direita */
+  .lista { display: grid; gap: 4px; }
+
+  .opcao { position: relative; cursor: pointer; }
+  .opcao input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+  .placa { border: 2px solid var(--vinho); color: var(--texto-2); }
+  .segmentos .placa { display: block; text-align: center; padding: 7px 0; }
+  .lista .placa { display: flex; justify-content: space-between; padding: 8px 12px; }
+  .detalhe { font-size: var(--t-rotulo); letter-spacing: .06em; }
+
+  .opcao:hover .placa { border-color: var(--vinho-claro); color: var(--texto); }
+  .opcao input:checked + .placa { border-color: var(--papel); color: var(--papel); }
+  .opcao input:focus-visible + .placa { outline: 2px solid var(--flash); outline-offset: 2px; }
+}

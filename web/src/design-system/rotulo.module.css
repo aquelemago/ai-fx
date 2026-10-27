@@ -1,0 +1,9 @@
+/* Rótulo: o texto curto em caixa alta de títulos, legendas e controles. */
+@layer ds {
+  .rotulo {
+    font-size: var(--t-rotulo);
+    font-weight: 700;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+  }
+}
