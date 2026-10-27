@@ -14,7 +14,7 @@ import { alinhar, colarRosto, misturarImagens } from '../rosto/composicao.js';
 
 const paraPng = (canvas) => canvas.convertToBlob({ type: 'image/png' });
 
-export async function produzirQuadro({ cliente, detector, base, anterior, parametros, ajustes, indice }) {
+export async function produzirQuadro({ cliente, detector, base, projetoId, anterior, parametros, ajustes, indice }) {
   const { lado } = base;
   const alinharAoFoco = (img) => alinhar(img, detector.pontos(img, lado, lado), base);
 
@@ -27,7 +27,7 @@ export async function produzirQuadro({ cliente, detector, base, anterior, parame
 
   // 2 e 3. cena e foco
   const cena = await createImageBitmap(await cliente.gerarQuadro({
-    ...parametros, baseId, quadro: indice, forca: ajustes.forca, passos: ajustes.passos,
+    ...parametros, baseId, projetoId, quadro: indice, forca: ajustes.forca, passos: ajustes.passos,
   }));
   const guia = colarRosto(alinharAoFoco(cena), base, ajustes.rosto, ajustes.harmonia); // 4
 

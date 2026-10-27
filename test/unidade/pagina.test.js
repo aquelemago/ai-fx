@@ -1,11 +1,14 @@
 // Módulos puros da página (public/js/dominio e geometria do rosto), testados no Node.
-import { test } from 'node:test';
+import { mock, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { nomeDaCena, parametrosDoQuadro } from '../../public/js/dominio/plano.js';
 import { FORMATOS, recorteNoFormato } from '../../public/js/dominio/formatos.js';
 import { ROTEIROS, montarPrompts } from '../../public/js/dominio/roteiros.js';
 import { ColecaoDeQuadros } from '../../public/js/dominio/quadros.js';
 import { ordenarContorno, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../public/js/rosto/geometria.js';
+import { arquivoDoQuadroFinal, nomeDoNovoProjeto, resumoDosQuadros } from '../../public/js/dominio/projeto.js';
+import { adiar } from '../../public/js/util/adiar.js';
+import { GerenteDeProjetos } from '../../public/js/projetos/gerente.js';
 import { formatarTempo } from '../../public/js/util/tempo.js';
 import { descricaoAleatoria, sementeAleatoria } from '../../public/js/dominio/rostos.js';
 
@@ -131,5 +134,116 @@ test('rostos: semente é inteiro positivo de 31 bits', () => {
   for (const r of [0, 0.5, 0.999999]) {
     const s = sementeAleatoria(() => r);
     assert.ok(Number.isInteger(s) && s >= 0 && s < 2 ** 31);
+  }
+});
+
+// ---------- projetos na página ----------
+
+test('projeto: nome do novo projeto usa o menor número livre', () => {
+  assert.equal(nomeDoNovoProjeto([]), 'Projeto 1');
+  assert.equal(nomeDoNovoProjeto(['Projeto 1', 'projeto 3', 'Praia']), 'Projeto 2');
+});
+
+test('projeto: resumo dos quadros não leva as imagens; arquivo final numerado', () => {
+  assert.deepEqual(resumoDosQuadros([{ indice: 1, cena: 'x', fora: true, canvas: {} }]), [{ indice: 1, cena: 'x', fora: true }]);
+  assert.equal(arquivoDoQuadroFinal(7), 'quadros/final_0007.png');
+});
+
+test('adiar: junta chamadas seguidas, executa na hora e cancela', () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const chamadas = [];
+    const f = adiar((x) => chamadas.push(x), 100);
+    f(1); f(2); f(3);
+    mock.timers.tick(99);
+    assert.deepEqual(chamadas, []);
+    mock.timers.tick(1);
+    assert.deepEqual(chamadas, [3]);
+    f(4);
+    f.agora();
+    assert.deepEqual(chamadas, [3, 4]);
+    f(5);
+    f.cancelar();
+    mock.timers.tick(200);
+    assert.deepEqual(chamadas, [3, 4]);
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+// cliente de mentira com a mesma interface do ClienteApi, guardando projetos em memória
+function clienteFalso() {
+  const projetos = new Map();
+  const pedidos = [];
+  let n = 0;
+  return {
+    pedidos,
+    async listarProjetos() {
+      return [...projetos.values()].reverse();
+    },
+    async criarProjeto(nome) {
+      const m = { id: `p${++n}`, nome, configuracao: {}, quadros: [] };
+      projetos.set(m.id, m);
+      return m;
+    },
+    async lerProjeto(id) {
+      return projetos.get(id);
+    },
+    async atualizarProjeto(id, mudancas) {
+      pedidos.push([id, mudancas]);
+      const m = projetos.get(id);
+      Object.assign(m, mudancas, { configuracao: { ...m.configuracao, ...mudancas.configuracao } });
+      return m;
+    },
+    async excluirProjeto(id) {
+      pedidos.push([id, 'excluir']);
+      projetos.delete(id);
+    },
+  };
+}
+
+test('gerente: cria o primeiro projeto e depois abre o mais recente', async () => {
+  const cliente = clienteFalso();
+  const g = new GerenteDeProjetos({ cliente });
+  assert.equal((await g.iniciar()).nome, 'Projeto 1');
+  await g.criar();
+  const outro = new GerenteDeProjetos({ cliente });
+  assert.equal((await outro.iniciar()).nome, 'Projeto 2');
+});
+
+test('gerente: soma partes da configuração num salvamento só', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const cliente = clienteFalso();
+    const g = new GerenteDeProjetos({ cliente });
+    await g.iniciar();
+    g.salvarConfiguracao({ descricao: 'a man', ajustes: { forca: 0.8 } });
+    g.salvarConfiguracao({ formato: '1:1' });
+    g.salvarQuadros([{ indice: 0, cena: 'x', fora: false, canvas: {} }]);
+    mock.timers.tick(600);
+    await Promise.resolve();
+    assert.equal(cliente.pedidos.length, 1);
+    const [, mudancas] = cliente.pedidos[0];
+    assert.deepEqual(mudancas.configuracao, { descricao: 'a man', ajustes: { forca: 0.8 }, formato: '1:1' });
+    assert.deepEqual(mudancas.quadros, [{ indice: 0, cena: 'x', fora: false }]);
+  } finally {
+    mock.timers.reset();
+  }
+});
+
+test('gerente: excluir descarta o que ia ser salvo e abre outro projeto', async () => {
+  mock.timers.enable({ apis: ['setTimeout'] });
+  try {
+    const cliente = clienteFalso();
+    const g = new GerenteDeProjetos({ cliente });
+    await g.iniciar();
+    await g.criar('Segundo');
+    g.salvarConfiguracao({ descricao: 'some' });
+    const aberto = await g.excluirAtual();
+    mock.timers.tick(1000);
+    assert.equal(aberto.nome, 'Projeto 1');
+    assert.deepEqual(cliente.pedidos.map(([, m]) => m), ['excluir']);
+  } finally {
+    mock.timers.reset();
   }
 });

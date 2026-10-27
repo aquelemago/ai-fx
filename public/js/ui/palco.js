@@ -1,21 +1,43 @@
 // Palco: a prévia e a barra de reprodução (tocar, ritmo, transição, formato, gravar, baixar).
+// Formato e ritmo pertencem ao projeto aberto, como a configuração da montagem.
 import { FORMATOS, FORMATO_PADRAO } from '../dominio/formatos.js';
 import { $, marcarOpcao, opcaoMarcada, valorNumerico } from '../util/dom.js';
-import { lerPreferencia, salvarPreferencia } from '../util/preferencias.js';
 
 export class Palco {
-  /** aoTocar(), aoMudarFormato(formato), aoGravar() */
-  constructor({ aoTocar, aoMudarFormato, aoGravar }) {
-    const salvo = lerPreferencia('formato', FORMATO_PADRAO);
-    marcarOpcao('formato', FORMATOS[salvo] ? salvo : FORMATO_PADRAO);
+  /** aoTocar(), aoMudarFormato(formato), aoGravar(), aoMudarConfiguracao({ formato, ritmo }) */
+  constructor({ aoTocar, aoMudarFormato, aoGravar, aoMudarConfiguracao }) {
+    this.aoMudarFormato = aoMudarFormato;
+    marcarOpcao('formato', FORMATO_PADRAO);
+    this.padrao = this.lerConfiguracao();
+    this.aplicando = false;
+    const mudou = () => {
+      if (!this.aplicando) aoMudarConfiguracao(this.lerConfiguracao());
+    };
 
     $('tocar').addEventListener('click', aoTocar);
     $('exportar').addEventListener('click', aoGravar);
+    $('fps').addEventListener('input', mudou);
+    $('transicao').addEventListener('input', mudou);
     document.querySelector('.formato').addEventListener('change', () => {
-      salvarPreferencia('formato', this.formato());
       this.aplicarFormato();
-      aoMudarFormato(this.formato());
+      mudou();
     });
+    this.aplicarFormato();
+  }
+
+  lerConfiguracao() {
+    return { formato: this.formato(), ritmo: this.ritmo() };
+  }
+
+  aplicarConfiguracao({ formato, ritmo } = {}) {
+    this.aplicando = true;
+    marcarOpcao('formato', FORMATOS[formato] ? formato : this.padrao.formato);
+    const r = { ...this.padrao.ritmo, ...ritmo };
+    for (const [id, valor] of [['fps', r.fps], ['transicao', r.transicao]]) {
+      $(id).value = valor;
+      $(id).dispatchEvent(new Event('input'));
+    }
+    this.aplicando = false;
     this.aplicarFormato();
   }
 
@@ -25,6 +47,7 @@ export class Palco {
 
   aplicarFormato() {
     $('moldura').dataset.formato = this.formato();
+    this.aoMudarFormato(this.formato());
   }
 
   ritmo() {
@@ -34,6 +57,10 @@ export class Palco {
   mostrarTocando(tocando) {
     $('tocar').setAttribute('aria-label', tocando ? 'Pausar' : 'Tocar');
     $('tocar').querySelector('use').setAttribute('href', tocando ? '#i-pausar' : '#i-tocar');
+  }
+
+  mostrarVazio() {
+    $('vazio').hidden = false;
   }
 
   esconderVazio() {

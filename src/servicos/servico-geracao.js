@@ -1,5 +1,5 @@
 // Regras da aplicação em volta do gerador: estado do modelo, fila e gravação das saídas.
-// Não conhece HTTP; recebe o gerador e o armazenamento prontos (injeção de dependência).
+// Não conhece HTTP; recebe o gerador e o repositório de projetos prontos (injeção de dependência).
 import crypto from 'node:crypto';
 import { FilaSerial } from './fila.js';
 import { imagemNeutra } from '../ia/imagem.js';
@@ -9,9 +9,9 @@ export const promptDeRosto = (descricao) =>
   `head and shoulders portrait photo of ${descricao}, front view, looking at camera, face in the center, plain background, soft studio light, sharp focus`;
 
 export class ServicoDeGeracao {
-  constructor({ gerador, armazenamento, log = console.log }) {
+  constructor({ gerador, projetos, log = console.log }) {
     this.gerador = gerador;
-    this.armazenamento = armazenamento;
+    this.projetos = projetos;
     this.log = log;
     this.fila = new FilaSerial();
     this.estado = { pronto: false, erro: null, modelo: gerador.constructor.nome };
@@ -43,8 +43,8 @@ export class ServicoDeGeracao {
     const t0 = Date.now();
     const png = await this.fila.executar(() => this.gerador.gerar(parametros));
     const ms = Date.now() - t0;
-    if (parametros.quadro !== undefined) {
-      await this.armazenamento.salvar(parametros.baseId, 'ia', parametros.quadro, png);
+    if (parametros.projetoId && parametros.quadro !== undefined) {
+      await this.projetos.salvarQuadro(parametros.projetoId, 'ia', parametros.quadro, png);
     }
     this.log(`quadro ${parametros.quadro ?? '-'} gerado em ${(ms / 1000).toFixed(1)}s`);
     return { png, ms };
@@ -62,10 +62,6 @@ export class ServicoDeGeracao {
     const ms = Date.now() - t0;
     this.log(`rosto gerado em ${(ms / 1000).toFixed(1)}s (semente ${semente})`);
     return { png, ms };
-  }
-
-  salvarFinal(baseId, quadro, png) {
-    return this.armazenamento.salvar(baseId, 'final', quadro, png);
   }
 }
 

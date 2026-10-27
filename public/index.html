@@ -25,6 +25,20 @@
       </header>
 
       <section class="grupo">
+        <h2><label for="projeto">Projeto</label></h2>
+        <div class="linha-projeto">
+          <select id="projeto" disabled></select>
+          <button id="novoProjeto" class="botao-linha" disabled>Novo</button>
+        </div>
+        <details class="cenas">
+          <summary>Renomear ou excluir</summary>
+          <input type="text" id="nomeProjeto" maxlength="80" aria-label="Nome do projeto" spellcheck="false">
+          <button id="excluirProjeto" class="botao-linha perigo">Excluir projeto</button>
+          <p id="pastaProjeto" class="nota"></p>
+        </details>
+      </section>
+
+      <section class="grupo">
         <h2>Foto</h2>
         <div class="foto">
           <canvas id="base" width="512" height="512" aria-label="Sua foto recortada"></canvas>

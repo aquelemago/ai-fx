@@ -12,7 +12,7 @@ npm run modelos   # baixa ~5 GB (SD-Turbo ONNX fp32, TAESD e detector de rosto)
 npm start         # abre em http://localhost:3000
 ```
 
-Variáveis opcionais: `PORT=3000`, `MODELO=sd-turbo` (modelos em `src/ia/modelos.js`), `SAIDAS=<pasta>` (onde gravar os quadros), `VAE=completo` (usa o decodificador original,
+Variáveis opcionais: `PORT=3000`, `HOST=127.0.0.1` (use `0.0.0.0` para abrir na rede local), `MODELO=sd-turbo` (modelos em `src/ia/modelos.js`), `PROJETOS=<pasta>` (onde ficam os projetos), `VAE=completo` (usa o decodificador original,
 mais fiel porém ~30 s mais lento por quadro), `THREADS=4` (threads da IA; o padrão é o número de
 núcleos físicos, que foi mais rápido que usar todas as threads).
 
@@ -56,16 +56,31 @@ então a imagem muda aos poucos em vez de pular.
 - **Preservar rosto**: força do rosto original usado como guia (antes do repasse da naturalidade).
 - **Harmonizar cor**: ajusta a cor do rosto colado pra combinar com a luz da cena.
 
-## Saídas
+## Projetos
 
-Cada quadro fica em `saidas/<id-da-foto>/`:
-`ia_XXXX.png` (saída crua da IA) e `final_XXXX.png` (alinhado, com o rosto).
+Cada trabalho é um projeto, como num editor de vídeo. Tudo dele fica numa pasta só:
+
+```
+projetos/<nome>-<id>/
+  projeto.json   nome, configurações, quadros (cena, riscado) e vídeos
+  foto.png       a foto base recortada
+  quadros/       ia_NNNN.png (saída crua da IA) e final_NNNN.png (alinhado, com o rosto)
+  videos/        os vídeos gravados
+```
+
+- **Novo** cria um projeto vazio. Ao abrir a página, o projeto mais recente é reaberto com a
+  foto, os ajustes, a tira e o vídeo do jeito que ficaram.
+- As configurações são salvas sozinhas no projeto aberto.
+- Gerar de novo apaga os quadros da geração anterior antes de começar. A foto e os vídeos ficam.
+- **Excluir projeto** apaga a pasta inteira. Apagar a pasta à mão tem o mesmo efeito.
 
 Pra montar um MP4 de alta qualidade com ffmpeg a partir dos quadros finais:
 
 ```bash
-ffmpeg -framerate 8 -i saidas/<id>/final_%04d.png -vf "minterpolate=fps=30:mi_mode=blend" -c:v libx264 -pix_fmt yuv420p -crf 16 timelapse.mp4
+ffmpeg -framerate 8 -i projetos/<pasta>/quadros/final_%04d.png -vf "minterpolate=fps=30:mi_mode=blend" -c:v libx264 -pix_fmt yuv420p -crf 16 timelapse.mp4
 ```
+
+Versões antigas gravavam em `saidas/`. Essa pasta não é mais usada e pode ser apagada.
 
 ## Código e testes
 
