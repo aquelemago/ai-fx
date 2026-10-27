@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Time Lapse IA</title>
+  <link rel="preload" href="fonts/barlow-condensed-latin-500-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <symbol id="i-tocar" viewBox="0 0 20 20"><path d="M6 4.5v11l9-5.5z" fill="currentColor"/></symbol>
+    <symbol id="i-pausar" viewBox="0 0 20 20"><path d="M6 4.5h2.5v11H6zM11.5 4.5H14v11h-2.5z" fill="currentColor"/></symbol>
+    <symbol id="i-baixar" viewBox="0 0 20 20"><path d="M10 3.5v9M6 9l4 4 4-4M4 16.5h12" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-riscar" viewBox="0 0 20 20"><path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-voltar" viewBox="0 0 20 20"><path d="M4 10a6 6 0 1 0 2-4.5M4 4v4h4" fill="none" stroke="currentColor" stroke-width="2"/></symbol>
+    <symbol id="i-risco" viewBox="0 0 100 100" preserveAspectRatio="none"><path d="M0 100L100 0" stroke="currentColor" stroke-width="3" vector-effect="non-scaling-stroke"/></symbol>
+  </svg>
+
+  <div class="cabine">
+    <aside class="montagem">
+      <header class="marca">
+        <h1>Time Lapse IA</h1>
+        <p id="status" class="estado" role="status">conectando…</p>
+      </header>
+
+      <section class="grupo">
+        <h2>Foto</h2>
+        <div class="foto">
+          <canvas id="base" width="512" height="512" aria-label="Sua foto recortada"></canvas>
+          <div>
+            <label class="botao-linha">
+              <input type="file" id="arquivo" accept="image/*">
+              <span>Escolher foto</span>
+            </label>
+            <p id="infoBase" class="nota">De frente, com o rosto bem iluminado.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="grupo">
+        <h2><label for="eu">Você, em inglês</label></h2>
+        <input type="text" id="eu" value="a young man with short dark hair" spellcheck="false">
+        <p class="nota">Evita que a IA troque seu cabelo ou roupa.</p>
+      </section>
+
+      <fieldset class="grupo">
+        <legend>Roteiro</legend>
+        <div id="roteiros" class="lista"></div>
+        <details class="cenas">
+          <summary>Editar cenas</summary>
+          <textarea id="prompts" rows="6" spellcheck="false" aria-label="Cenas, uma por linha"></textarea>
+          <p class="nota">Uma cena por linha, em inglês. {eu} vira a sua descrição.</p>
+        </details>
+      </fieldset>
+
+      <fieldset class="grupo">
+        <legend>Quadros</legend>
+        <div class="segmentos" id="quantidades">
+          <label><input type="radio" name="quadros" value="12"><span>12</span></label>
+          <label><input type="radio" name="quadros" value="24" checked><span>24</span></label>
+          <label><input type="radio" name="quadros" value="48"><span>48</span></label>
+          <label><input type="radio" name="quadros" value="96"><span>96</span></label>
+        </div>
+        <p id="estimativa" class="nota"></p>
+      </fieldset>
+
+      <button id="gerar" class="gerar" disabled>Gerar 24 quadros</button>
+      <div class="progresso" aria-hidden="true"><div id="progresso"></div></div>
+      <p id="infoGeracao" class="nota" role="status"></p>
+
+      <details class="ajustes">
+        <summary>Ajustes finos</summary>
+        <label>Força da IA <output for="forca"></output>
+          <input type="range" id="forca" min="0.15" max="1" step="0.01" value="0.82"></label>
+        <p class="nota">Abaixo de 0,75 o cenário quase não muda. Acima de 0,92 a pose muda.</p>
+        <label>Passos <output for="passos"></output>
+          <input type="range" id="passos" min="1" max="4" value="1"></label>
+        <label>Suavidade <output for="suavidade"></output>
+          <input type="range" id="suavidade" min="1" max="24" value="6"></label>
+        <p class="nota">1 deixa cada quadro diferente, com tremido de time lapse.</p>
+        <label>Preservar rosto <output for="rosto"></output>
+          <input type="range" id="rosto" min="0" max="1" step="0.05" value="0.9"></label>
+        <label>Harmonizar cor do rosto <output for="harmonia"></output>
+          <input type="range" id="harmonia" min="0" max="1" step="0.05" value="0.6"></label>
+        <label>Semente
+          <input type="number" id="semente" value="42"></label>
+      </details>
+    </aside>
+
+    <main class="palco">
+      <div class="moldura" id="moldura" data-formato="9:16">
+        <canvas id="player" width="720" height="1280" aria-label="Prévia do vídeo"></canvas>
+        <p id="vazio" class="vazio">Escolha uma foto e gere os quadros.<br>O vídeo aparece aqui.</p>
+      </div>
+
+      <div class="controles">
+        <button id="tocar" class="icone" aria-label="Pausar" disabled>
+          <svg><use href="#i-pausar"/></svg>
+        </button>
+        <label class="controle">Ritmo <output for="fps"></output>
+          <input type="range" id="fps" min="1" max="30" value="8"></label>
+        <label class="controle">Transição <output for="transicao"></output>
+          <input type="range" id="transicao" min="0" max="1" step="0.05" value="0.6"></label>
+        <div class="segmentos formato" role="radiogroup" aria-label="Formato do vídeo">
+          <label><input type="radio" name="formato" value="9:16" checked><span>9:16</span></label>
+          <label><input type="radio" name="formato" value="1:1"><span>1:1</span></label>
+        </div>
+        <div class="saida">
+          <button id="exportar" class="botao-linha" disabled>Gravar vídeo</button>
+          <a id="baixar" class="botao-linha" hidden><svg><use href="#i-baixar"/></svg>Baixar</a>
+        </div>
+      </div>
+    </main>
+
+    <aside class="tira" aria-labelledby="titulo-tira">
+      <header>
+        <h2 id="titulo-tira">Tira</h2>
+        <span id="contagem" class="nota"></span>
+      </header>
+      <div class="fenda" aria-hidden="true"></div>
+      <ol id="tira"></ol>
+    </aside>
+  </div>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
