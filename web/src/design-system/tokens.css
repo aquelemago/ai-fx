@@ -1,0 +1,36 @@
+/* Tokens da cabine de fotos: cortina vinho, papel fotográfico e o amarelo do flash.
+   Uso noturno, por isso o fundo escuro. Cor chapada, sem gradiente nem sombra.
+   Ordem das camadas: base (elementos soltos) < ds (componentes). O CSS das funcionalidades
+   fica fora de camada, então um ajuste de layout sempre vence o estilo do componente. */
+@layer base, ds;
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/barlow-condensed-latin-500-normal.woff2') format('woff2');
+  font-weight: 500;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Barlow Condensed';
+  src: url('/fonts/barlow-condensed-latin-700-normal.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+:root {
+  --cortina: #2b0d12;
+  --cortina-funda: #1c070b;
+  --vinho: #4a1720;
+  --vinho-claro: #6e2a35;
+  --papel: #e4ded2;
+  --texto: #e4ded2;
+  --texto-2: #bca8a1;
+  --tinta: #160a0c;
+  --flash: #f2c230;
+  --flash-claro: #ffd34a;
+  --erro: #ff9b8c;
+  --t-rotulo: 13px;
+  --t-corpo: 17px;
+  --fonte: 'Barlow Condensed', sans-serif;
+  --sair: cubic-bezier(.16, 1, .3, 1);
+}

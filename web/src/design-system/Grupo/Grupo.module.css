@@ -1,0 +1,4 @@
+@layer ds {
+  .grupo { border: 0; padding: 0; margin: 0 0 28px; min-width: 0; }
+  .titulo { color: var(--texto-2); margin: 0 0 10px; padding: 0; }
+}

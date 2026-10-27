@@ -7,7 +7,7 @@
     "build": "vite build",
     "producao": "vite build && NODE_ENV=production node server.js",
     "modelos": "bash scripts/baixar-modelos.sh",
-    "test": "node --test 'test/unidade/*.test.js'",
+    "test": "node --test 'test/unidade/*.test.js' && vitest run",
     "test:modelo": "node --test 'test/integracao/*.test.js'"
   },
   "keywords": [],

@@ -1,0 +1,11 @@
+@layer ds {
+  .resumo { cursor: pointer; color: var(--texto-2); list-style: none; display: flex; gap: 8px; align-items: center; }
+  .resumo::-webkit-details-marker { display: none; }
+  .resumo::before { content: ''; width: 0; height: 0; border: 5px solid transparent; border-left-color: currentColor; transition: transform .2s var(--sair); }
+  .recolhivel[open] > .resumo::before { transform: rotate(90deg) translateX(2px); }
+  .resumo:hover { color: var(--texto); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .resumo::before { transition: none; }
+  }
+}
