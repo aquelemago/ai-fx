@@ -11,6 +11,9 @@ import { adiar } from '../../web/src/nucleo/util/adiar.js';
 import { GerenteDeProjetos } from '../../web/src/nucleo/projetos/gerente.js';
 import { formatarTempo } from '../../web/src/nucleo/util/tempo.js';
 import { descricaoAleatoria, sementeAleatoria } from '../../web/src/nucleo/dominio/rostos.js';
+import {
+  CONFIGURACAO_PADRAO, comCenas, comRoteiro, completarConfiguracao, parteDaMontagem, parteDoPalco, pedidoDeGeracao,
+} from '../../web/src/nucleo/dominio/configuracao.js';
 
 test('plano: primeiro e último quadro caem exatamente na primeira e na última cena', () => {
   const prompts = ['a', 'b', 'c'];
@@ -256,4 +259,35 @@ test('plano: semente do rosto muda a cada quadro, mesmo quando a cena muda devag
   assert.ok(rosto.every((s) => Number.isInteger(s) && s >= 0 && s < 2 ** 31));
   assert.equal(sementeDoRosto(42, 5), sementeDoRosto(42, 5)); // reprodutível
   assert.notEqual(sementeDoRosto(42, 5), sementeDoRosto(43, 5));
+});
+
+test('configuração: projeto novo recebe o padrão e valores inválidos voltam ao padrão', () => {
+  assert.deepEqual(completarConfiguracao(), CONFIGURACAO_PADRAO);
+  const c = completarConfiguracao({ quadros: 7, formato: '4:3', roteiro: 'sumiu', ajustes: { semente: 9 }, ritmo: { fps: 2 } });
+  assert.equal(c.quadros, CONFIGURACAO_PADRAO.quadros);
+  assert.equal(c.formato, '9:16');
+  assert.equal(c.roteiro, 'Um dia inteiro');
+  assert.deepEqual(c.ajustes, { ...CONFIGURACAO_PADRAO.ajustes, semente: 9 });
+  assert.deepEqual(c.ritmo, { fps: 2, transicao: 0.6 });
+});
+
+test('configuração: roteiro pronto traz as cenas dele; personalizado guarda as do usuário', () => {
+  const pronto = completarConfiguracao({ roteiro: 'Estilos de arte', cenas: 'ignorada' });
+  assert.equal(pronto.cenas, ROTEIROS['Estilos de arte'].cenas.join('\n'));
+  assert.equal(parteDaMontagem(pronto).cenas, undefined);
+
+  const meu = comCenas(pronto, 'a\nb');
+  assert.equal(meu.roteiro, 'Personalizado');
+  assert.equal(parteDaMontagem(meu).cenas, 'a\nb');
+  assert.equal(comRoteiro(meu, 'Personalizado').cenas, 'a\nb');
+  assert.equal(completarConfiguracao(parteDaMontagem(meu)).cenas, 'a\nb');
+  assert.deepEqual(parteDoPalco(meu), { formato: '9:16', ritmo: { fps: 8, transicao: 0.6 } });
+});
+
+test('configuração: pedido de geração troca {eu} e exige uma cena', () => {
+  const p = pedidoDeGeracao(comCenas({ ...CONFIGURACAO_PADRAO, descricao: 'a cat' }, 'photo of {eu}\n\n'));
+  assert.deepEqual(p.prompts, ['photo of a cat']);
+  assert.equal(p.nomes, undefined);
+  assert.equal(p.total, 24);
+  assert.throws(() => pedidoDeGeracao(comCenas(CONFIGURACAO_PADRAO, ' ')), /pelo menos uma cena/);
 });

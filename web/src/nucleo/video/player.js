@@ -22,9 +22,14 @@ export class Player {
         if (this.tocando) this.tempo += dt;
         this.desenhar(this.tempo);
       }
-      requestAnimationFrame(loop);
+      this.pedido = requestAnimationFrame(loop);
     };
-    requestAnimationFrame(loop);
+    this.pedido = requestAnimationFrame(loop);
+  }
+
+  /** Para o laço de desenho (quando a prévia sai da tela). */
+  parar() {
+    cancelAnimationFrame(this.pedido);
   }
 
   desenhar(t) {

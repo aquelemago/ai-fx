@@ -1,9 +1,10 @@
 // Prepara a foto base: acha o rosto, recorta um quadrado em volta e monta a máscara.
 import { CONTORNO_DO_ROSTO } from './detector.js';
 import { quadradoEmVoltaDoRosto } from './geometria.js';
+import { ErroDeRosto } from './erros.js';
 import { criarMascara } from './mascara.js';
 
-export class ErroDeRosto extends Error {}
+export { ErroDeRosto };
 
 /**
  * Desenha o recorte em `canvas` (lado×lado) e devolve a foto base:
