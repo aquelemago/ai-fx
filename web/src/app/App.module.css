@@ -1,0 +1,15 @@
+/* Grade da cabine: montagem | palco | tira. Cada coluna cuida do próprio layout responsivo. */
+.cabine {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr) 232px;
+  grid-template-rows: minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+}
+
+@media (max-width: 1100px) {
+  .cabine { grid-template-columns: 300px minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+}
+@media (max-width: 720px) {
+  .cabine { display: block; height: auto; }
+}

@@ -1,0 +1,40 @@
+.montagem {
+  background: var(--cortina-funda);
+  border-right: 2px solid var(--vinho);
+  padding: 28px 28px 40px;
+  overflow-y: auto;
+}
+.marca { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 32px; }
+.marca h1 { color: var(--papel); }
+.estado { margin: 0; font-size: var(--t-rotulo); color: var(--texto-2); }
+.ok { color: var(--papel); }
+.erro { color: var(--erro); }
+
+.foto { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: start; }
+.base {
+  width: 72px; height: 72px; display: block;
+  background: var(--cortina); outline: 2px solid var(--vinho); outline-offset: 0;
+}
+.base.pronta { outline: 4px solid var(--papel); }
+.acoesFoto { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.recolhivel { margin-top: 12px; }
+.cenas { margin-top: 10px; }
+
+.progresso { height: 2px; background: var(--vinho); margin-top: 12px; }
+.barra { height: 100%; width: 0; background: var(--flash); transition: width .6s var(--sair); }
+
+.ajustes { margin-top: 28px; border-top: 2px solid var(--vinho); padding-top: 18px; }
+.ajuste { margin-top: 18px; }
+.notaDoAjuste { margin-top: 4px; }
+.semente { display: block; color: var(--texto-2); }
+
+@media (prefers-reduced-motion: reduce) {
+  .barra { transition: none; }
+}
+@media (max-width: 1100px) {
+  .montagem { grid-row: 1 / 3; }
+}
+@media (max-width: 720px) {
+  .montagem { border-right: 0; border-bottom: 2px solid var(--vinho); padding: 24px 16px; }
+}

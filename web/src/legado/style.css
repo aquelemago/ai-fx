@@ -11,6 +11,8 @@
   font-display: swap;
 }
 
+/* Estilo dos painéis que ainda não viraram React, numa camada abaixo do design system. */
+@layer legado {
 /* Cabine de fotos: cortina vinho, papel fotográfico e o amarelo do flash.
    Uso noturno, por isso o fundo escuro. Cor chapada, sem gradiente nem sombra. */
 :root {
@@ -268,3 +270,4 @@ input[type=range]::-moz-range-thumb { width: 12px; height: 18px; background: var
   .controles { justify-content: stretch; }
   .controle { width: calc(50% - 12px); }
 }
+} /* @layer legado */

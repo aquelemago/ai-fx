@@ -1,8 +1,8 @@
 /* Tokens da cabine de fotos: cortina vinho, papel fotográfico e o amarelo do flash.
    Uso noturno, por isso o fundo escuro. Cor chapada, sem gradiente nem sombra.
-   Ordem das camadas: base (elementos soltos) < ds (componentes). O CSS das funcionalidades
+   Ordem das camadas: base (elementos soltos) < legado (painéis antigos) < ds (componentes). O CSS das funcionalidades
    fica fora de camada, então um ajuste de layout sempre vence o estilo do componente. */
-@layer base, ds;
+@layer base, legado, ds;
 
 @font-face {
   font-family: 'Barlow Condensed';
