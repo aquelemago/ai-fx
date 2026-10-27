@@ -13,34 +13,57 @@
 // Continuidade 0 parte sempre só da foto original.
 import { sementeDoRosto } from '../dominio/plano.js';
 import { alinhar, colarRosto, misturarImagens } from '../rosto/composicao.js';
+import { criarCronometro } from './cronometro.js';
 
 const paraPng = (canvas) => canvas.convertToBlob({ type: 'image/png' });
 
-export async function produzirQuadro({ cliente, detector, base, projetoId, anterior, parametros, ajustes, indice }) {
+/** `cronometro` (opcional) recebe o tempo de cada etapa; veja cronometro.js. */
+export async function produzirQuadro({
+  cliente, detector, base, projetoId, anterior, parametros, ajustes, indice, cronometro = criarCronometro(),
+}) {
   const { lado } = base;
+  const medir = cronometro.medir;
   const alinharAoFoco = (img) => alinhar(img, detector.pontos(img, lado, lado), base);
 
   // 1. ponto de partida
   let baseId = base.id;
   if (anterior && ajustes.continuidade > 0) {
     const partida = misturarImagens(base.canvas, anterior, ajustes.continuidade, lado);
-    baseId = await cliente.enviarBase(await paraPng(partida));
+    medir('mistura');
+    const png = await paraPng(partida);
+    medir('png da partida');
+    baseId = await cliente.enviarBase(png);
+    medir('envio da partida');
   }
 
   // 2 e 3. cena e foco
-  const cena = await createImageBitmap(await cliente.gerarQuadro({
+  const respostaDaCena = await cliente.gerarQuadro({
     ...parametros, baseId, projetoId, quadro: indice, forca: ajustes.forca, passos: ajustes.passos,
-  }));
-  const guia = colarRosto(alinharAoFoco(cena), base, ajustes.rosto, ajustes.harmonia); // 4
+  });
+  medir('cena');
+  const cena = await createImageBitmap(respostaDaCena);
+  medir('leitura da cena');
+  const focada = alinharAoFoco(cena);
+  medir('foco');
+  const guia = colarRosto(focada, base, ajustes.rosto, ajustes.harmonia); // 4
+  medir('rosto');
 
   if (ajustes.naturalidade <= 0) return guia;
 
   // 5 e 6. naturalidade e foco de novo
-  const idGuia = await cliente.enviarBase(await paraPng(guia));
+  const pngDoGuia = await paraPng(guia);
+  medir('png do guia');
+  const idGuia = await cliente.enviarBase(pngDoGuia);
+  medir('envio do guia');
   const semente = sementeDoRosto(ajustes.semente, indice);
-  const refeito = await createImageBitmap(await cliente.gerarQuadro({
+  const respostaRefeita = await cliente.gerarQuadro({
     ...parametros, sementeA: semente, sementeB: semente, mixSemente: 0,
     baseId: idGuia, forca: ajustes.naturalidade, passos: ajustes.passos,
-  }));
-  return alinharAoFoco(refeito);
+  });
+  medir('naturalidade');
+  const refeito = await createImageBitmap(respostaRefeita);
+  medir('leitura do refeito');
+  const final = alinharAoFoco(refeito);
+  medir('foco de novo');
+  return final;
 }
