@@ -1,6 +1,7 @@
-// "Ajustes finos": os controles da geração que quase ninguém precisa mexer.
+// "Ajustes finos": os controles da geração que quase ninguém precisa mexer. Conteúdo direto
+// da aba Ajustes, sem recolher.
 import { Fragment, useEffect, useState } from 'react';
-import { CampoDeTexto, Deslizante, Nota, Recolhivel, tipografia } from '../../design-system/index.js';
+import { CampoDeTexto, Deslizante, Grupo, Nota, tipografia } from '../../design-system/index.js';
 import estilos from './Montagem.module.css';
 
 const AJUSTES = [
@@ -19,7 +20,7 @@ const AJUSTES = [
 
 export function Ajustes({ ajustes, definirAjuste }) {
   return (
-    <Recolhivel resumo="Ajustes finos" className={estilos.ajustes}>
+    <Grupo titulo="Ajustes finos">
       {AJUSTES.map(({ id, rotulo, min, max, passo, nota }) => (
         <Fragment key={id}>
           <Deslizante
@@ -30,7 +31,7 @@ export function Ajustes({ ajustes, definirAjuste }) {
         </Fragment>
       ))}
       <Semente valor={ajustes.semente} aoMudar={(v) => definirAjuste('semente', v)} />
-    </Recolhivel>
+    </Grupo>
   );
 }
 

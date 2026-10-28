@@ -1,0 +1,14 @@
+@layer ds {
+  /* fileira de abas que estica até a base da barra, para o traço da ativa encostar na borda */
+  .abas { display: flex; align-self: stretch; }
+  .aba {
+    align-self: stretch; display: flex; align-items: center;
+    background: transparent; border: 0; border-bottom: 2px solid transparent;
+    margin-bottom: -2px; padding: 0 16px; cursor: pointer;
+    color: var(--texto-2);
+    font: 700 var(--t-rotulo)/1 var(--fonte);
+    letter-spacing: .12em; text-transform: uppercase;
+  }
+  .aba:hover { color: var(--texto); }
+  .aba[aria-selected="true"] { color: var(--papel); border-bottom-color: var(--papel); }
+}

@@ -5,6 +5,7 @@ export { Botao, classesDoBotao } from './Botao/Botao.jsx';
 export { Icone, SpriteDeIcones, NOMES_DE_ICONES } from './Icone/Icone.jsx';
 export { Deslizante } from './Deslizante/Deslizante.jsx';
 export { Segmentos } from './Segmentos/Segmentos.jsx';
+export { Abas } from './Abas/Abas.jsx';
 export { Grupo } from './Grupo/Grupo.jsx';
 export { Nota } from './Nota/Nota.jsx';
 export { Recolhivel } from './Recolhivel/Recolhivel.jsx';
