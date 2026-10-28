@@ -12,6 +12,7 @@ import { ErroDeRosto, prepararFotoBase } from './rosto/recorte.js';
 import { PainelDeMontagem } from './ui/montagem.js';
 import { Palco, ligarSaidas } from './ui/palco.js';
 import { BarraDeProjetos } from './ui/projetos.js';
+import { ligarSecoes } from './ui/secoes.js';
 import { acompanharServidor } from './ui/status.js';
 import { Tira } from './ui/tira.js';
 import { $ } from './util/dom.js';
@@ -39,6 +40,7 @@ const modeloPronto = new Promise((r) => (avisarModeloPronto = r));
 
 // ---------- peças da tela ----------
 ligarSaidas({ fps: (v) => `${v} q/s`, transicao: (v) => `${Math.round(v * 100)}%` });
+ligarSecoes();
 
 const palco = new Palco({
   aoTocar: () => palco.mostrarTocando(player.alternar()),
