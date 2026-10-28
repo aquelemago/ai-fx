@@ -51,7 +51,7 @@ export class PainelDeMontagem {
     $('roteiros').addEventListener('change', () => {
       const escolhido = ROTEIROS[opcaoMarcada('roteiro')];
       if (escolhido) $('prompts').value = escolhido.cenas.join('\n');
-      else $('roteiros').closest('fieldset').querySelector('details').open = true;
+      else $('prompts').focus(); // cenas personalizadas: o textarea já está visível na aba Cenas
     });
     $('prompts').addEventListener('input', () => marcarOpcao('roteiro', PERSONALIZADO));
   }
