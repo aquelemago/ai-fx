@@ -2,7 +2,7 @@ import { describe, expect, test, vi } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import {
-  AreaDeTexto, Botao, CampoDeTexto, Deslizante, EscolherArquivo, Grupo, Icone, Nota, Recolhivel, Segmentos,
+  Abas, AreaDeTexto, Botao, CampoDeTexto, Deslizante, EscolherArquivo, Grupo, Icone, Nota, Recolhivel, Segmentos,
   Selecao, SpriteDeIcones, NOMES_DE_ICONES,
 } from './index.js';
 
@@ -97,6 +97,35 @@ describe('Grupo, Nota e Recolhivel', () => {
     details.open = true;
     fireEvent(details, new Event('toggle'));
     expect(aoAlternar).toHaveBeenCalledWith(true);
+  });
+});
+
+describe('Abas', () => {
+  const opcoes = [
+    { valor: 'foto', rotulo: 'Foto' },
+    { valor: 'cenas', rotulo: 'Cenas' },
+    { valor: 'ajustes', rotulo: 'Ajustes' },
+  ];
+
+  test('só a aba ativa está selecionada e liga o painel pelo id', () => {
+    render(<Abas opcoes={opcoes} valor="cenas" aoMudar={() => {}} rotuloAcessivel="Seções" />);
+    const lista = screen.getByRole('tablist', { name: 'Seções' });
+    expect(lista.getAttribute('role')).toBe('tablist');
+    expect(screen.getByRole('tab', { name: 'Cenas' }).getAttribute('aria-selected')).toBe('true');
+    expect(screen.getByRole('tab', { name: 'Cenas' }).getAttribute('aria-controls')).toBe('painel-cenas');
+    expect(screen.getByRole('tab', { name: 'Foto' }).getAttribute('aria-selected')).toBe('false');
+  });
+
+  test('foco segue a aba ativa (roving tabindex) e setas trocam de aba', () => {
+    const aoMudar = vi.fn();
+    render(<Abas opcoes={opcoes} valor="foto" aoMudar={aoMudar} rotuloAcessivel="Seções" />);
+    const foto = screen.getByRole('tab', { name: 'Foto' });
+    expect(foto.tabIndex).toBe(0);
+    expect(screen.getByRole('tab', { name: 'Cenas' }).tabIndex).toBe(-1);
+    fireEvent.keyDown(foto, { key: 'ArrowRight' });
+    expect(aoMudar).toHaveBeenCalledWith('cenas');
+    fireEvent.keyDown(foto, { key: 'ArrowLeft' });
+    expect(aoMudar).toHaveBeenCalledWith('ajustes');
   });
 });
 
