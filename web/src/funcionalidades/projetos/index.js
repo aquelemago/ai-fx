@@ -1,1 +1,1 @@
-export { Projetos } from './Projetos.jsx';
+export { SeletorDeProjeto, GerenciarProjeto } from './Projetos.jsx';

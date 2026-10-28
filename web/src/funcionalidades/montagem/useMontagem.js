@@ -13,7 +13,6 @@ export function useMontagem() {
     servidor: e.servidor,
     configuracao: c,
     foto: { canvas: e.foto?.canvas ?? null, pronta: e.fotoPronta, info: e.infoFoto },
-    cenasAbertas: e.cenasAbertas,
     estimativa: `Cerca de ${formatarTempo(c.quadros * e.segPorQuadro)} no seu processador.`,
     gerar: {
       rotulo: e.gerando ? (e.parando ? 'Parando…' : 'Parar') : `Gerar ${c.quadros} quadros`,
@@ -30,7 +29,6 @@ export function useMontagem() {
     definirDescricao: (texto) => estudio.definirDescricao(texto),
     escolherRoteiro: (nome) => estudio.escolherRoteiro(nome),
     editarCenas: (texto) => estudio.editarCenas(texto),
-    abrirCenas: (aberto) => estudio.abrirCenas(aberto),
     definirQuadros: (n) => estudio.definirQuadros(n),
     definirAjuste: (nome, valor) => estudio.definirAjuste(nome, valor),
   };

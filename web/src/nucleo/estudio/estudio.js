@@ -39,7 +39,6 @@ export class Estudio extends EventTarget {
       projeto: null,
       carregandoProjeto: false,
       configuracao: CONFIGURACAO_PADRAO,
-      cenasAbertas: false,
       foto: null, // { id, canvas, pontos, mascara, lado }
       fotoPronta: false,
       infoFoto: TEXTO_DA_FOTO,
@@ -54,7 +53,6 @@ export class Estudio extends EventTarget {
       quadrosAtivos: 0,
       quadroAtual: null,
       proximo: null, // { indice, cena, fim } vaga do quadro sendo gerado, com o fim estimado
-      contagem: '',
       tocando: true,
       gravando: false,
       gravacao: null, // fração gravada enquanto grava
@@ -81,7 +79,7 @@ export class Estudio extends EventTarget {
   iniciar() {
     this.quadros.addEventListener('mudou', ({ detail: { tipo } }) => {
       if (!this.estado.carregandoProjeto) this.gerente.salvarQuadros(this.quadros.lista);
-      const limpo = tipo === 'limpo' ? { contagem: '', proximo: null, quadroAtual: null } : {};
+      const limpo = tipo === 'limpo' ? { proximo: null, quadroAtual: null } : {};
       this.mudar({ quadros: [...this.quadros.lista], quadrosAtivos: this.quadros.ativos().length, ...limpo });
     });
     this.gerente.addEventListener('lista', ({ detail }) => this.mudar({ projetos: detail.projetos }));
@@ -183,8 +181,6 @@ export class Estudio extends EventTarget {
       const novo = this.quadros.adicionar({ canvas, indice: q.indice, cena: q.cena });
       if (q.fora) this.quadros.alternarFora(novo);
     }
-    const n = this.quadros.lista.length;
-    if (n) this.mudar({ contagem: `${n} de ${n}` });
   }
 
   // ---------- configuração (montagem e palco) ----------
@@ -199,16 +195,11 @@ export class Estudio extends EventTarget {
   }
 
   escolherRoteiro(nome) {
-    if (!ROTEIROS[nome]) this.mudar({ cenasAbertas: true }); // "Personalizado": mostra onde escrever
     this.configurar(comRoteiro(this.estado.configuracao, nome), parteDaMontagem);
   }
 
   editarCenas(cenas) {
     this.configurar(comCenas(this.estado.configuracao, cenas), parteDaMontagem);
-  }
-
-  abrirCenas(cenasAbertas) {
-    this.mudar({ cenasAbertas });
   }
 
   definirQuadros(quadros) {
@@ -309,7 +300,6 @@ export class Estudio extends EventTarget {
     ouvir('aviso', (d) => this.mudar({ infoGeracao: d.mensagem }));
     ouvir('progresso', ({ feitos, total, segPorQuadro }) => this.mudar({
       progresso: feitos / total,
-      contagem: `${feitos} de ${total}`,
       infoGeracao: feitos < total ? `Faltam cerca de ${formatarTempo(segPorQuadro * (total - feitos))}.` : '',
     }));
     ouvir('fim', (d) => {

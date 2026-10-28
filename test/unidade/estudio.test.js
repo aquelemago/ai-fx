@@ -72,7 +72,6 @@ test('estúdio: abrir um projeto completa a configuração e carrega os quadros 
   assert.deepEqual(pedidos, ['/arquivos/p1/quadros/final_0000.png', '/arquivos/p1/quadros/final_0001.png']);
   assert.deepEqual(e.quadros.map((q) => [q.indice, q.fora]), [[0, false], [1, true]]);
   assert.equal(e.quadrosAtivos, 1);
-  assert.equal(e.contagem, '2 de 2');
   assert.deepEqual(gerente.quadrosSalvos, [], 'carregar não regrava os quadros');
   assert.equal(e.carregandoProjeto, false);
 });
@@ -86,16 +85,14 @@ test('estúdio: projeto com foto espera o modelo, prepara a foto e a marca como 
   assert.equal(estudio.estado.servidor.texto, 'modelo pronto');
 });
 
-test('estúdio: roteiro personalizado abre as cenas e editar cenas salva o texto', async () => {
+test('estúdio: roteiro personalizado mantém as cenas e editar salva o texto', async () => {
   const { estudio, gerente } = montar({ manifestos: [manifesto()] });
   await estudio.iniciar();
   estudio.escolherRoteiro('Estações do ano');
   assert.match(estudio.estado.configuracao.cenas, /spring/);
-  assert.equal(estudio.estado.cenasAbertas, false);
   assert.equal(gerente.configuracoes.at(-1).cenas, undefined, 'cenas de roteiro pronto não vão para o manifesto');
 
   estudio.escolherRoteiro('Personalizado');
-  assert.equal(estudio.estado.cenasAbertas, true);
   assert.match(estudio.estado.configuracao.cenas, /spring/, 'o texto continua o mesmo');
 
   estudio.editarCenas('photo of {eu} on the moon');
@@ -146,7 +143,7 @@ test('estúdio: gerar acompanha a sessão até o fim', async () => {
   assert.equal(estudio.estado.proximo.cena, 'amanhecer');
   sessao.emitir('quadro', { canvas: canvasFalso('q0'), indice: 0, cena: 'amanhecer' });
   sessao.emitir('progresso', { feitos: 1, total: 12, segPorQuadro: 10 });
-  assert.equal(estudio.estado.contagem, '1 de 12');
+  assert.equal(estudio.estado.quadros.length, 1, 'o contador da tira vem dos quadros salvos');
   assert.equal(estudio.estado.infoGeracao, 'Faltam cerca de 1 min 50 s.');
 
   estudio.parar();

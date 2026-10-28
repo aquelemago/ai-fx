@@ -10,11 +10,24 @@ afterEach(() => vi.useRealTimers());
 
 describe('Tira', () => {
   test('a cópia mais nova fica no topo, com número e cena', () => {
-    const estudio = criarEstudioFalso({ quadros: [quadro(0, 'amanhecer'), quadro(1, 'manhã')], contagem: '2 de 12' });
+    const estudio = criarEstudioFalso({ quadros: [quadro(0, 'amanhecer'), quadro(1, 'manhã')], configuracao: { quadros: 12 } });
     const { container } = renderizarCom(estudio, <Tira />);
     const rodapes = [...container.querySelectorAll('#tira li span')].map((s) => s.textContent);
     expect(rodapes).toEqual(['02 · manhã', '01 · amanhecer']);
     expect(screen.getByText('2 de 12').id).toBe('contagem');
+  });
+
+  test('o contador vem dos quadros que existem sobre o total pedido', () => {
+    // projeto com 1 quadro salvo, mas a configuração pede 12: mostra "1 de 12", não "1 de 1"
+    const estudio = criarEstudioFalso({ quadros: [quadro(0, 'amanhecer')], configuracao: { quadros: 12 } });
+    renderizarCom(estudio, <Tira />);
+    expect(screen.getByText('1 de 12').id).toBe('contagem');
+  });
+
+  test('sem quadros, o contador fica vazio', () => {
+    const estudio = criarEstudioFalso({ quadros: [], configuracao: { quadros: 24 } });
+    renderizarCom(estudio, <Tira />);
+    expect(screen.queryByText(/de 24/)).toBe(null);
   });
 
   test('clicar na cópia leva a prévia até ela; riscar e voltar vão para o estúdio', async () => {

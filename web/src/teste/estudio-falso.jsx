@@ -8,7 +8,7 @@ import { Estudio } from '../nucleo/estudio/estudio.js';
 
 const ACOES = [
   'abrirProjeto', 'novoProjeto', 'renomearProjeto', 'excluirProjeto', 'escolherFoto', 'gerarRosto',
-  'definirDescricao', 'escolherRoteiro', 'editarCenas', 'abrirCenas', 'definirQuadros', 'definirAjuste',
+  'definirDescricao', 'escolherRoteiro', 'editarCenas', 'definirQuadros', 'definirAjuste',
   'definirFormato', 'definirRitmo', 'gerar', 'parar', 'alternarFora', 'irPara', 'tocar', 'gravarVideo',
 ];
 

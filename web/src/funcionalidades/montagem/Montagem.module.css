@@ -1,14 +1,12 @@
 .montagem {
   background: var(--cortina-funda);
   border-right: 2px solid var(--vinho);
-  padding: 28px 28px 40px;
-  overflow-y: auto;
+  display: flex; flex-direction: column; min-height: 0;
 }
-.marca { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 32px; }
-.marca h1 { color: var(--papel); }
-.estado { margin: 0; font-size: var(--t-rotulo); color: var(--texto-2); }
-.ok { color: var(--papel); }
-.erro { color: var(--erro); }
+.paineis { flex: 1 1 auto; overflow-y: auto; padding: 28px 28px 20px; }
+.painel { animation: painel-entra .18s var(--sair); }
+@keyframes painel-entra { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.rodape { flex: none; border-top: 2px solid var(--vinho); padding: 18px 28px 22px; }
 
 .foto { display: grid; grid-template-columns: 72px 1fr; gap: 14px; align-items: start; }
 .base {
@@ -18,23 +16,24 @@
 .base.pronta { outline: 4px solid var(--papel); }
 .acoesFoto { display: flex; flex-wrap: wrap; gap: 8px; }
 
-.recolhivel { margin-top: 12px; }
-.cenas { margin-top: 10px; }
+.cenas { margin-top: 0; }
 
 .progresso { height: 2px; background: var(--vinho); margin-top: 12px; }
 .barra { height: 100%; width: 0; background: var(--flash); transition: width .6s var(--sair); }
 
-.ajustes { margin-top: 28px; border-top: 2px solid var(--vinho); padding-top: 18px; }
 .ajuste { margin-top: 18px; }
 .notaDoAjuste { margin-top: 4px; }
 .semente { display: block; color: var(--texto-2); }
 
 @media (prefers-reduced-motion: reduce) {
+  .painel { animation: none; }
   .barra { transition: none; }
 }
 @media (max-width: 1100px) {
-  .montagem { grid-row: 1 / 3; }
+  .montagem { grid-column: 1; grid-row: 2 / 4; }
 }
 @media (max-width: 720px) {
-  .montagem { border-right: 0; border-bottom: 2px solid var(--vinho); padding: 24px 16px; }
+  .montagem { border-right: 0; border-bottom: 2px solid var(--vinho); }
+  .paineis { padding: 24px 16px 16px; }
+  .rodape { padding: 16px; }
 }

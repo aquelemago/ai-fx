@@ -156,13 +156,30 @@ na página toda, para contagens e tempos não dançarem.
 
 ## Layout
 
-Grade de três colunas que ocupa a altura da janela: montagem (340px), palco (o resto) e tira
-(232px). Cada coluna rola sozinha. A montagem tem respiro de 28px e grupos separados por 28px;
-dentro de um grupo, o título fica a 10px do conteúdo e as notas a 6px.
+Grade de três colunas sob uma barra de topo, ocupando a altura da janela. A barra de topo traz a
+marca com o estado do servidor, as abas de seção e o seletor de projeto. Embaixo dela, a montagem
+(340px), o palco (o resto) e a tira (232px). Cada coluna rola sozinha; na montagem, só os painéis
+rolam e o rodapé (Gerar + progresso) fica fixo. A montagem tem respiro de 28px e grupos separados
+por 28px; dentro de um grupo, o título fica a 10px do conteúdo e as notas a 6px.
 
 - **Até 1100px:** a montagem estreita para 300px e ocupa a altura toda; a tira desce para baixo do palco e vira uma faixa horizontal de cópias de 112px.
-- **Até 720px:** tudo empilha numa coluna só, com respiro lateral de 16px; os deslizantes do palco ficam dois por linha.
+- **Até 720px:** tudo empilha numa coluna só, com respiro lateral de 16px; os deslizantes do palco ficam dois por linha; as abas viram uma faixa rolável e o seletor de projeto ocupa a linha de baixo da barra.
 - O palco centraliza a moldura e mantém a proporção do formato do vídeo (9:16 ou 1:1).
+
+## Navigation
+
+A montagem é dividida em três seções, cada uma numa aba: **Foto** (a foto base e a descrição),
+**Cenas** (roteiro, cenas e quantidade de quadros) e **Ajustes** (ajustes finos e o projeto). A
+barra de topo hospeda as abas e o seletor de projeto; o palco e a tira ficam fixos, visíveis em
+qualquer aba, e o rodapé da montagem (Gerar + progresso) também não muda com a aba.
+
+As abas são um `tablist` acessível: a ativa vai em papel com um traço de 2px encostando na borda
+da barra; as outras, em texto 2. Só a aba ativa tem foco de teclado (roving tabindex) e as setas
+←/→ percorrem as abas. No mobile a mesma faixa de abas rola na horizontal — não vira hambúrguer.
+
+### Named Rules
+**A Regra do Palco Fixo.** Foto, cenas e ajustes são conteúdo que muda; o palco, a tira e o Gerar
+não. Nada do que o usuário gere ou assiste pode sumir ao trocar de aba.
 
 ## Elevation & Depth
 
@@ -193,6 +210,10 @@ funcionalidades só ajustam o layout em volta deles.
 ### Chips (Segmentos)
 - **Style:** placas com borda de 2px em vinho e texto em texto 2, lado a lado (quadros, formato) ou em lista com um detalhe à direita (roteiro).
 - **State:** hover clareia a borda para vinho claro; a opção marcada ganha borda e texto em papel.
+
+### Tabs (Abas)
+- **Style:** rótulo em caixa alta (13px, 700), sem borda nem fundo; a aba ativa vira papel e ganha um traço de 2px em papel na base, encostado na borda da barra.
+- **State:** repouso em texto 2, hover em texto; só a aba ativa responde ao foco de teclado (roving tabindex) e as setas ←/→ percorrem.
 
 ### Cards / Containers (Grupo, Recolhivel)
 - **Corner Style:** retos.
