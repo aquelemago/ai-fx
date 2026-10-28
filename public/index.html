@@ -18,97 +18,114 @@
   </svg>
 
   <div class="cabine">
-    <aside class="montagem">
-      <header class="marca">
+    <header class="barra-topo">
+      <div class="marca">
         <h1>Time Lapse IA</h1>
         <p id="status" class="estado" role="status">conectando…</p>
-      </header>
+      </div>
 
-      <section class="grupo">
-        <h2><label for="projeto">Projeto</label></h2>
-        <div class="linha-projeto">
-          <select id="projeto" disabled></select>
-          <button id="novoProjeto" class="botao-linha" disabled>Novo</button>
-        </div>
-        <details class="cenas">
-          <summary>Renomear ou excluir</summary>
-          <input type="text" id="nomeProjeto" maxlength="80" aria-label="Nome do projeto" spellcheck="false">
-          <button id="excluirProjeto" class="botao-linha perigo">Excluir projeto</button>
-          <p id="pastaProjeto" class="nota"></p>
-        </details>
-      </section>
+      <nav class="abas" role="tablist" aria-label="Seções da montagem">
+        <button type="button" class="aba" role="tab" id="aba-foto" aria-selected="true" aria-controls="painel-foto" data-secao="foto">Foto</button>
+        <button type="button" class="aba" role="tab" id="aba-cenas" aria-selected="false" aria-controls="painel-cenas" data-secao="cenas" tabindex="-1">Cenas</button>
+        <button type="button" class="aba" role="tab" id="aba-ajustes" aria-selected="false" aria-controls="painel-ajustes" data-secao="ajustes" tabindex="-1">Ajustes</button>
+      </nav>
 
-      <section class="grupo">
-        <h2>Foto</h2>
-        <div class="foto">
-          <canvas id="base" width="512" height="512" aria-label="Sua foto recortada"></canvas>
-          <div>
-            <div class="acoes-foto">
-              <label class="botao-linha">
-                <input type="file" id="arquivo" accept="image/*">
-                <span>Escolher foto</span>
-              </label>
-              <button id="gerarRosto" class="botao-linha" disabled>Gerar rosto</button>
+      <div class="projeto-topo">
+        <select id="projeto" disabled aria-label="Projeto atual"></select>
+        <button id="novoProjeto" class="botao-linha" disabled>Novo</button>
+      </div>
+    </header>
+
+    <aside class="montagem">
+      <div class="paineis">
+        <section class="painel" id="painel-foto" data-secao="foto" role="tabpanel" aria-labelledby="aba-foto">
+          <section class="grupo">
+            <h2>Foto</h2>
+            <div class="foto">
+              <canvas id="base" width="512" height="512" aria-label="Sua foto recortada"></canvas>
+              <div>
+                <div class="acoes-foto">
+                  <label class="botao-linha">
+                    <input type="file" id="arquivo" accept="image/*">
+                    <span>Escolher foto</span>
+                  </label>
+                  <button id="gerarRosto" class="botao-linha" disabled>Gerar rosto</button>
+                </div>
+                <p id="infoBase" class="nota">De frente, com o rosto bem iluminado.</p>
+              </div>
             </div>
-            <p id="infoBase" class="nota">De frente, com o rosto bem iluminado.</p>
-          </div>
-        </div>
-      </section>
+          </section>
 
-      <section class="grupo">
-        <h2><label for="eu">Você, em inglês</label></h2>
-        <input type="text" id="eu" value="a young man with short dark hair" spellcheck="false">
-        <p class="nota">Evita que a IA troque seu cabelo ou roupa.</p>
-      </section>
+          <section class="grupo">
+            <h2><label for="eu">Você, em inglês</label></h2>
+            <input type="text" id="eu" value="a young man with short dark hair" spellcheck="false">
+            <p class="nota">Evita que a IA troque seu cabelo ou roupa.</p>
+          </section>
+        </section>
 
-      <fieldset class="grupo">
-        <legend>Roteiro</legend>
-        <div id="roteiros" class="lista"></div>
-        <details class="cenas">
-          <summary>Editar cenas</summary>
-          <textarea id="prompts" rows="6" spellcheck="false" aria-label="Cenas, uma por linha"></textarea>
-          <p class="nota">Uma cena por linha, em inglês. {eu} vira a sua descrição.</p>
-        </details>
-      </fieldset>
+        <section class="painel" id="painel-cenas" data-secao="cenas" role="tabpanel" aria-labelledby="aba-cenas" hidden>
+          <fieldset class="grupo">
+            <legend>Roteiro</legend>
+            <div id="roteiros" class="lista"></div>
+          </fieldset>
 
-      <fieldset class="grupo">
-        <legend>Quadros</legend>
-        <div class="segmentos" id="quantidades">
-          <label><input type="radio" name="quadros" value="12"><span>12</span></label>
-          <label><input type="radio" name="quadros" value="24" checked><span>24</span></label>
-          <label><input type="radio" name="quadros" value="48"><span>48</span></label>
-          <label><input type="radio" name="quadros" value="96"><span>96</span></label>
-        </div>
-        <p id="estimativa" class="nota"></p>
-      </fieldset>
+          <section class="grupo">
+            <h2><label for="prompts">Cenas</label></h2>
+            <textarea id="prompts" rows="6" spellcheck="false" aria-label="Cenas, uma por linha"></textarea>
+            <p class="nota">Uma cena por linha, em inglês. {eu} vira a sua descrição.</p>
+          </section>
 
-      <button id="gerar" class="gerar" disabled>Gerar 24 quadros</button>
-      <div class="progresso" aria-hidden="true"><div id="progresso"></div></div>
-      <p id="infoGeracao" class="nota" role="status"></p>
+          <fieldset class="grupo">
+            <legend>Quadros</legend>
+            <div class="segmentos" id="quantidades">
+              <label><input type="radio" name="quadros" value="12"><span>12</span></label>
+              <label><input type="radio" name="quadros" value="24" checked><span>24</span></label>
+              <label><input type="radio" name="quadros" value="48"><span>48</span></label>
+              <label><input type="radio" name="quadros" value="96"><span>96</span></label>
+            </div>
+            <p id="estimativa" class="nota"></p>
+          </fieldset>
+        </section>
 
-      <details class="ajustes">
-        <summary>Ajustes finos</summary>
-        <label>Força da IA <output for="forca"></output>
-          <input type="range" id="forca" min="0.15" max="1" step="0.01" value="0.82"></label>
-        <p class="nota">Abaixo de 0,75 o cenário quase não muda. Acima de 0,92 a pose muda.</p>
-        <label>Passos <output for="passos"></output>
-          <input type="range" id="passos" min="1" max="4" value="1"></label>
-        <label>Suavidade <output for="suavidade"></output>
-          <input type="range" id="suavidade" min="1" max="24" value="6"></label>
-        <p class="nota">1 deixa cada quadro diferente, com tremido de time lapse.</p>
-        <label>Naturalidade do rosto <output for="naturalidade"></output>
-          <input type="range" id="naturalidade" min="0" max="0.6" step="0.05" value="0.45"></label>
-        <p class="nota">0 deixa o rosto fixo, como uma foto colada. Mais alto, o rosto muda como em outro dia, mas cada quadro leva quase o dobro do tempo.</p>
-        <label>Continuidade <output for="continuidade"></output>
-          <input type="range" id="continuidade" min="0" max="0.6" step="0.05" value="0.25"></label>
-        <p class="nota">Quanto cada quadro parte do anterior. 0 parte sempre só da sua foto.</p>
-        <label>Preservar rosto <output for="rosto"></output>
-          <input type="range" id="rosto" min="0" max="1" step="0.05" value="0.9"></label>
-        <label>Harmonizar cor do rosto <output for="harmonia"></output>
-          <input type="range" id="harmonia" min="0" max="1" step="0.05" value="0.6"></label>
-        <label>Semente
-          <input type="number" id="semente" value="42"></label>
-      </details>
+        <section class="painel" id="painel-ajustes" data-secao="ajustes" role="tabpanel" aria-labelledby="aba-ajustes" hidden>
+          <section class="grupo ajustes">
+            <h2>Ajustes finos</h2>
+            <label>Força da IA <output for="forca"></output>
+              <input type="range" id="forca" min="0.15" max="1" step="0.01" value="0.82"></label>
+            <p class="nota">Abaixo de 0,75 o cenário quase não muda. Acima de 0,92 a pose muda.</p>
+            <label>Passos <output for="passos"></output>
+              <input type="range" id="passos" min="1" max="4" value="1"></label>
+            <label>Suavidade <output for="suavidade"></output>
+              <input type="range" id="suavidade" min="1" max="24" value="6"></label>
+            <p class="nota">1 deixa cada quadro diferente, com tremido de time lapse.</p>
+            <label>Naturalidade do rosto <output for="naturalidade"></output>
+              <input type="range" id="naturalidade" min="0" max="0.6" step="0.05" value="0.45"></label>
+            <p class="nota">0 deixa o rosto fixo, como uma foto colada. Mais alto, o rosto muda como em outro dia, mas cada quadro leva quase o dobro do tempo.</p>
+            <label>Continuidade <output for="continuidade"></output>
+              <input type="range" id="continuidade" min="0" max="0.6" step="0.05" value="0.25"></label>
+            <p class="nota">Quanto cada quadro parte do anterior. 0 parte sempre só da sua foto.</p>
+            <label>Preservar rosto <output for="rosto"></output>
+              <input type="range" id="rosto" min="0" max="1" step="0.05" value="0.9"></label>
+            <label>Harmonizar cor do rosto <output for="harmonia"></output>
+              <input type="range" id="harmonia" min="0" max="1" step="0.05" value="0.6"></label>
+            <label>Semente
+              <input type="number" id="semente" value="42"></label>
+          </section>
+
+          <section class="grupo">
+            <h2>Projeto</h2>
+            <input type="text" id="nomeProjeto" maxlength="80" aria-label="Nome do projeto" spellcheck="false">
+            <button id="excluirProjeto" class="botao-linha perigo">Excluir projeto</button>
+            <p id="pastaProjeto" class="nota"></p>
+          </section>
+        </section>
+      </div>
+
+      <div class="rodape-montagem">
+        <button id="gerar" class="gerar" disabled>Gerar 24 quadros</button>
+        <div class="progresso" aria-hidden="true"><div id="progresso"></div></div>
+        <p id="infoGeracao" class="nota" role="status"></p>
+      </div>
     </aside>
 
     <main class="palco">
