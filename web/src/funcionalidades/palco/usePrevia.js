@@ -35,9 +35,10 @@ export function usePrevia() {
     renderizador.current.definirFormato(formato);
   }, [formato]);
 
-  // o recorte vertical (9:16) acompanha o rosto da foto; com um vídeo como base, fica no centro
+  // o recorte vertical (9:16) acompanha o rosto da base (no vídeo, o do 1º quadro-fonte)
   useEffect(() => {
-    renderizador.current.rostoX = foto && !videoFonte ? centroDosOlhos(foto.pontos).x : undefined;
+    const pontos = (videoFonte ?? foto)?.pontos;
+    renderizador.current.rostoX = pontos ? centroDosOlhos(pontos).x : undefined;
   }, [foto, videoFonte]);
 
   return canvas;

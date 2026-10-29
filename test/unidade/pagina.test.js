@@ -5,7 +5,7 @@ import { nomeDaCena, parametrosDoQuadro, sementeDoRosto } from '../../web/src/nu
 import { FORMATOS, recorteNoFormato } from '../../web/src/nucleo/dominio/formatos.js';
 import { ROTEIROS, montarPrompts } from '../../web/src/nucleo/dominio/roteiros.js';
 import { ColecaoDeQuadros } from '../../web/src/nucleo/dominio/quadros.js';
-import { ordenarContorno, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../web/src/nucleo/rosto/geometria.js';
+import { ordenarContorno, quadradoDoVideo, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../web/src/nucleo/rosto/geometria.js';
 import { arquivoDoQuadroFinal, nomeDoNovoProjeto, resumoDosQuadros } from '../../web/src/nucleo/dominio/projeto.js';
 import { adiar } from '../../web/src/nucleo/util/adiar.js';
 import { GerenteDeProjetos } from '../../web/src/nucleo/projetos/gerente.js';
@@ -96,6 +96,19 @@ test('geometria: recorte em volta do rosto não sai da foto', () => {
   const pts = [{ x: 10, y: 10 }, { x: 90, y: 120 }];
   const q = quadradoEmVoltaDoRosto(pts, 300, 200);
   assert.ok(q.x >= 0 && q.y >= 0 && q.x + q.lado <= 300 && q.y + q.lado <= 200);
+});
+
+test('geometria: vídeo sem rosto recorta o quadrado do centro', () => {
+  assert.deepEqual(quadradoDoVideo(null, 720, 1280), { x: 0, y: 280, lado: 720 });
+  assert.deepEqual(quadradoDoVideo(null, 1280, 720), { x: 280, y: 0, lado: 720 });
+});
+
+test('geometria: vídeo com rosto recorta em volta dele', () => {
+  const pts = [{ x: 1000, y: 300 }, { x: 1100, y: 400 }];
+  const q = quadradoDoVideo(pts, 1280, 720);
+  assert.ok(q.x <= 1000 && q.x + q.lado >= 1100 && q.x + q.lado <= 1280);
+  assert.ok(q.y >= 0 && q.y + q.lado <= 720);
+  assert.notEqual(q.x, 280);
 });
 
 test('coleção de quadros: avisa mudanças e filtra os riscados', () => {

@@ -30,7 +30,7 @@ const estudio = new Estudio({
   sessao: new SessaoDeGeracao({ cliente, detector }),
   gerente: new GerenteDeProjetos({ cliente }),
   prepararFoto: (arquivo) => prepararFotoBase(arquivo, detector, new OffscreenCanvas(LADO_DA_FOTO, LADO_DA_FOTO)),
-  prepararVideo: (arquivo) => abrirVideo(arquivo, LADO_DA_FOTO),
+  prepararVideo: (arquivo) => abrirVideo(arquivo, LADO_DA_FOTO, detector),
   lerImagem,
   gravar: gravarCanvas,
 });

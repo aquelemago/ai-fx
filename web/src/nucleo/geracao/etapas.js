@@ -47,13 +47,17 @@ export async function produzirQuadro({ cliente, detector, base, projetoId, anter
   return alinharAoFoco(refeito);
 }
 
-/** Um quadro do vídeo: o quadro-fonte vira a base e a IA o redesenha com a cena. */
+/**
+ * Um quadro do vídeo: o quadro-fonte vira a base, a IA o redesenha com a cena e o rosto daquele
+ * quadro-fonte é colado de volta, sem alinhar. Quadro-fonte sem rosto fica só com a saída da IA.
+ */
 export async function produzirQuadroDoVideo({ cliente, fonte, projetoId, parametros, ajustes, indice }) {
-  const baseId = await cliente.enviarBase(await paraPng(fonte));
+  const { lado } = fonte;
+  const baseId = await cliente.enviarBase(await paraPng(fonte.canvas));
   const cena = await createImageBitmap(await cliente.gerarQuadro({
     ...parametros, baseId, projetoId, quadro: indice, forca: ajustes.forca, passos: ajustes.passos,
   }));
-  const canvas = new OffscreenCanvas(fonte.width, fonte.height);
-  canvas.getContext('2d').drawImage(cena, 0, 0, fonte.width, fonte.height);
-  return canvas;
+  const canvas = new OffscreenCanvas(lado, lado);
+  canvas.getContext('2d').drawImage(cena, 0, 0, lado, lado);
+  return fonte.mascara ? colarRosto(canvas, fonte, ajustes.rosto, ajustes.harmonia) : canvas;
 }

@@ -55,3 +55,10 @@ export function quadradoEmVoltaDoRosto(pts, largura, altura, folga = 2.1) {
   const cy = Math.min(Math.max((y0 + y1) / 2 - (y1 - y0) * 0.05, lado / 2), altura - lado / 2);
   return { x: cx - lado / 2, y: cy - lado / 2, lado };
 }
+
+/** Quadrado de um vídeo: em volta do rosto do 1º quadro, ou no centro se não houver rosto. */
+export function quadradoDoVideo(pts, largura, altura) {
+  if (pts) return quadradoEmVoltaDoRosto(pts, largura, altura);
+  const lado = Math.min(largura, altura);
+  return { x: (largura - lado) / 2, y: (altura - lado) / 2, lado };
+}
