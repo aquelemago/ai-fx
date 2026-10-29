@@ -3,7 +3,7 @@ import { mock, test } from 'node:test';
 import assert from 'node:assert/strict';
 import { nomeDaCena, parametrosDoQuadro, sementeDoRosto } from '../../web/src/nucleo/dominio/plano.js';
 import { FORMATOS, recorteNoFormato } from '../../web/src/nucleo/dominio/formatos.js';
-import { ROTEIROS, montarPrompts } from '../../web/src/nucleo/dominio/roteiros.js';
+import { ROTEIROS, SO_A_IMAGEM, montarPrompts } from '../../web/src/nucleo/dominio/roteiros.js';
 import { ColecaoDeQuadros } from '../../web/src/nucleo/dominio/quadros.js';
 import { ordenarContorno, quadradoDoVideo, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../web/src/nucleo/rosto/geometria.js';
 import { arquivoDoQuadroFinal, nomeDoNovoProjeto, resumoDosQuadros } from '../../web/src/nucleo/dominio/projeto.js';
@@ -304,6 +304,19 @@ test('configuração: pedido de geração troca {eu} e exige uma cena', () => {
   assert.equal(p.nomes, undefined);
   assert.equal(p.total, 24);
   assert.throws(() => pedidoDeGeracao(comCenas(CONFIGURACAO_PADRAO, ' ')), /pelo menos uma cena/);
+});
+
+test('configuração: "Só a imagem" gera com o prompt vazio e guarda o texto das cenas', () => {
+  const meu = comCenas(CONFIGURACAO_PADRAO, 'photo of {eu}');
+  const so = comRoteiro(meu, SO_A_IMAGEM);
+  assert.equal(so.cenas, 'photo of {eu}', 'o texto fica para quando voltar ao Personalizado');
+  const p = pedidoDeGeracao(so, { total: 8 });
+  assert.deepEqual(p.prompts, ['']);
+  assert.deepEqual(p.nomes, ['só a imagem']);
+  assert.deepEqual(pedidoDeGeracao(comRoteiro(comCenas(so, ''), SO_A_IMAGEM)).prompts, [''], 'sem cenas escritas também vale');
+  const salva = completarConfiguracao(parteDaMontagem(so));
+  assert.equal(salva.roteiro, SO_A_IMAGEM);
+  assert.equal(salva.cenas, 'photo of {eu}');
 });
 
 test('vídeo: 34 s viram 80 quadros dos primeiros 10 s, a 8 por segundo', () => {

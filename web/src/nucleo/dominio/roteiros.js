@@ -1,6 +1,8 @@
 // Roteiros prontos. Para criar um novo, adicione uma entrada: "nomes" rotulam os quadros
 // na tira e "cenas" são os prompts em inglês, na ordem do tempo. {eu} vira a descrição da pessoa.
 export const PERSONALIZADO = 'Personalizado';
+// Sem prompt: a IA só relê a imagem (com força baixa, vira um filtro leve).
+export const SO_A_IMAGEM = 'Só a imagem';
 
 export const ROTEIROS = {
   'Um dia inteiro': {
