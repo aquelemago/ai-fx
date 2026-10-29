@@ -9,7 +9,7 @@ import { Renderizador } from '../../nucleo/video/renderizador.js';
 
 export function usePrevia() {
   const estudio = useEstudio();
-  const { configuracao: { formato }, foto } = useEstado();
+  const { configuracao: { formato }, foto, videoFonte } = useEstado();
   const canvas = useRef(null);
   const renderizador = useRef(null);
 
@@ -20,7 +20,7 @@ export function usePrevia() {
       renderizador: r,
       quadros: estudio.quadros,
       ritmo: () => estudio.estado.configuracao.ritmo,
-      fotoBase: () => estudio.estado.foto?.canvas ?? null,
+      fotoBase: () => estudio.estado.videoFonte?.canvas ?? estudio.estado.foto?.canvas ?? null,
       aoMudarQuadro: (q) => estudio.marcarAtual(q),
     });
     renderizador.current = r;
@@ -35,10 +35,10 @@ export function usePrevia() {
     renderizador.current.definirFormato(formato);
   }, [formato]);
 
-  // o recorte vertical (9:16) acompanha o rosto da foto
+  // o recorte vertical (9:16) acompanha o rosto da foto; com um vídeo como base, fica no centro
   useEffect(() => {
-    renderizador.current.rostoX = foto ? centroDosOlhos(foto.pontos).x : undefined;
-  }, [foto]);
+    renderizador.current.rostoX = foto && !videoFonte ? centroDosOlhos(foto.pontos).x : undefined;
+  }, [foto, videoFonte]);
 
   return canvas;
 }

@@ -61,4 +61,13 @@ describe('Palco', () => {
     act(() => estudio.mudar({ foto: { canvas: {}, pontos: Array.from({ length: 478 }, () => ({ x: 1, y: 1 })) } }));
     expect(container.querySelector('#vazio').hidden).toBe(true);
   });
+
+  test('com um vídeo como base, a moldura sai do convite e a prévia mostra o 1º quadro-fonte', () => {
+    const estudio = criarEstudioFalso();
+    const { container } = renderizarCom(estudio, <Palco />);
+    const quadroFonte = { width: 512, height: 512 };
+    act(() => estudio.mudar({ videoFonte: { canvas: quadroFonte, total: 12 } }));
+    expect(container.querySelector('#vazio').hidden).toBe(true);
+    expect(estudio.previa.player.fotoBase()).toBe(quadroFonte);
+  });
 });

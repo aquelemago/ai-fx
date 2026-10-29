@@ -28,7 +28,7 @@ class SessaoFalsa extends EventTarget {
   emitir(tipo, detail) { this.dispatchEvent(new CustomEvent(tipo, { detail })); }
 }
 
-function montar({ manifestos, prepararFoto = async () => ({ canvas: canvasFalso('foto'), pontos: [], lado: 512 }) }) {
+function montar({ manifestos, prepararFoto = async () => ({ canvas: canvasFalso('foto'), pontos: [], lado: 512 }), prepararVideo = async () => videoFalso() }) {
   const pedidos = [];
   const cliente = {
     status: async () => ({ pronto: true }),
@@ -45,12 +45,15 @@ function montar({ manifestos, prepararFoto = async () => ({ canvas: canvasFalso(
     sessao,
     gerente,
     prepararFoto,
+    prepararVideo,
     lerImagem: async (url) => (pedidos.push(url), canvasFalso(url)),
     gravar: async () => ({ blob: new Blob(['v']), extensao: 'mp4' }),
     buscar: async () => ({ ok: true, blob: async () => new Blob(['png']) }),
   });
   return { estudio, gerente, sessao, pedidos };
 }
+
+const videoFalso = (extra = {}) => ({ canvas: canvasFalso('quadro-fonte 0'), duracao: 34, total: 80, cortado: true, quadro: async () => canvasFalso('q'), fechar() {}, ...extra });
 
 const manifesto = (extra = {}) => ({ id: 'p1', nome: 'Projeto 1', temFoto: false, quadros: [], configuracao: {}, ...extra });
 
@@ -164,4 +167,68 @@ test('estúdio: o que fica habilitado em cada momento', () => {
   assert.deepEqual(controles({ ...base, gravando: true }), { gerar: true, gerarRosto: false, tocar: true, gravar: false, projetos: false });
   assert.deepEqual(controles({ ...base, quadrosAtivos: 1 }).tocar, false);
   assert.equal(controles({ ...base, projeto: null }).projetos, false);
+});
+
+test('estúdio: escolher vídeo vira a base e avisa o corte', async () => {
+  const { estudio } = montar({ manifestos: [manifesto()] });
+  await estudio.iniciar();
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  assert.equal(estudio.estado.infoFoto, 'Vídeo de 34 s: vou usar os primeiros 10 s (80 quadros).');
+  assert.equal(estudio.estado.fotoPronta, true);
+  assert.equal(controles(estudio.estado).gerar, true, 'gera sem foto, só com o vídeo');
+});
+
+test('estúdio: vídeo curto mostra quantos quadros vai gerar', async () => {
+  const { estudio } = montar({ manifestos: [manifesto()], prepararVideo: async () => videoFalso({ duracao: 4.2, total: 33, cortado: false }) });
+  await estudio.iniciar();
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  assert.equal(estudio.estado.infoFoto, 'Vídeo de 4 s: 33 quadros.');
+});
+
+test('estúdio: gerar com vídeo manda o vídeo e o total dele para a sessão', async () => {
+  const video = videoFalso();
+  const { estudio, sessao } = montar({ manifestos: [manifesto()], prepararVideo: async () => video });
+  await estudio.iniciar();
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  estudio.gerar();
+  assert.equal(sessao.pedido.total, 80);
+  assert.equal(sessao.pedido.video, video);
+  assert.equal(sessao.pedido.ajustes.naturalidade, 0);
+  assert.equal(estudio.estado.configuracao.ajustes.naturalidade, 0.45, 'o ajuste salvo não muda');
+});
+
+test('estúdio: vale a última base escolhida', async () => {
+  const video = videoFalso();
+  const { estudio, sessao } = montar({ manifestos: [manifesto()], prepararVideo: async () => video });
+  await estudio.iniciar();
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  await estudio.escolherFoto(new File(['x'], 'eu.png'));
+  estudio.gerar();
+  assert.equal(sessao.pedido.video, null);
+  assert.equal(sessao.pedido.total, 24);
+
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  estudio.gerar();
+  assert.equal(sessao.pedido.video, video);
+});
+
+test('estúdio: vídeo que não abre avisa e mantém a base anterior', async () => {
+  const { estudio } = montar({ manifestos: [manifesto()], prepararVideo: async () => { throw new Error('formato não suportado'); } });
+  await estudio.iniciar();
+  await estudio.escolherFoto(new File(['x'], 'eu.png'));
+  const foto = estudio.estado.foto;
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  assert.equal(estudio.estado.infoFoto, 'Não consegui abrir esse vídeo: formato não suportado');
+  assert.equal(estudio.estado.foto, foto);
+  assert.equal(controles(estudio.estado).gerar, true);
+});
+
+test('estúdio: trocar de vídeo durante a geração não fecha o que a sessão está usando', async () => {
+  let fechados = 0;
+  const { estudio } = montar({ manifestos: [manifesto()], prepararVideo: async () => videoFalso({ fechar: () => fechados++ }) });
+  await estudio.iniciar();
+  await estudio.escolherVideo(new File(['v'], 'a.mp4'));
+  estudio.gerar();
+  await estudio.escolherVideo(new File(['v'], 'b.mp4'));
+  assert.equal(fechados, 0);
 });

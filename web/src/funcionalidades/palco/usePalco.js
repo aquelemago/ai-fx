@@ -13,7 +13,7 @@ export function usePalco() {
   return {
     formato: e.configuracao.formato,
     ritmo: e.configuracao.ritmo,
-    vazio: !e.foto,
+    vazio: !e.foto && !e.videoFonte,
     tocando: e.tocando,
     podeTocar: pode.tocar,
     podeGravar: pode.gravar,

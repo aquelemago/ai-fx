@@ -54,6 +54,7 @@ function PainelFoto() {
           <div>
             <div className={estilos.acoesFoto}>
               <EscolherArquivo id="arquivo" rotulo="Escolher foto" accept="image/*" aoEscolher={m.escolherFoto} />
+              <EscolherArquivo id="arquivoVideo" rotulo="Escolher vídeo" accept="video/*" aoEscolher={m.escolherVideo} />
               <Botao id="gerarRosto" disabled={!m.podeGerarRosto} onClick={m.gerarRosto}>Gerar rosto</Botao>
             </div>
             <Nota id="infoBase">{m.foto.info}</Nota>

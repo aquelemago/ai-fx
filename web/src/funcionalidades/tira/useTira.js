@@ -1,5 +1,6 @@
 // A tira mostra as cópias da mais nova (no topo) para a mais velha, e a vaga do próximo quadro.
 import { useEstado, useEstudio } from '../../app/contexto.js';
+import { totalDeQuadros } from '../../nucleo/estudio/estudio.js';
 
 export function useTira() {
   const estudio = useEstudio();
@@ -7,7 +8,7 @@ export function useTira() {
   // O contador vem dos quadros que existem e do total pedido: não mente quando o projeto
   // guarda menos quadros do que a configuração pede (ex.: 1 de 12), nem durante a geração.
   const feitos = e.quadros.length;
-  const total = e.configuracao.quadros;
+  const total = totalDeQuadros(e);
   return {
     quadros: [...e.quadros].reverse(),
     atual: e.quadroAtual,

@@ -71,4 +71,18 @@ describe('Montagem', () => {
     expect(screen.getByText('Procurando o rosto…')).toBeTruthy();
     expect(screen.getByText('Faltam cerca de 8 s.').getAttribute('role')).toBe('status');
   });
+
+  test('com vídeo como base, o botão diz Gerar 80 quadros e fica habilitado', () => {
+    const estudio = criarEstudioFalso({ ...pronto, foto: null, videoFonte: { canvas: null, total: 80 } });
+    renderizarCom(estudio, <Montagem aba="foto" />);
+    expect(screen.getByRole('button', { name: 'Gerar 80 quadros' }).disabled).toBe(false);
+  });
+
+  test('Escolher vídeo manda o arquivo ao estúdio', async () => {
+    const estudio = criarEstudioFalso();
+    renderizarCom(estudio, <Montagem aba="foto" />);
+    const arquivo = new File(['v'], 'eu.mp4', { type: 'video/mp4' });
+    await userEvent.upload(screen.getByLabelText('Escolher vídeo'), arquivo);
+    expect(estudio.escolherVideo).toHaveBeenCalledWith(arquivo);
+  });
 });

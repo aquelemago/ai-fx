@@ -6,7 +6,7 @@
 //   fim       { motivo: 'completo' | 'cancelado' | 'erro', feitos, total, segundos, erro? }
 //   aviso     { mensagem }                     algo falhou sem interromper a geração
 import { nomeDaCena, parametrosDoQuadro } from '../dominio/plano.js';
-import { produzirQuadro } from './etapas.js';
+import { produzirQuadro, produzirQuadroDoVideo } from './etapas.js';
 
 export class SessaoDeGeracao extends EventTarget {
   constructor({ cliente, detector }) {
@@ -22,11 +22,12 @@ export class SessaoDeGeracao extends EventTarget {
   }
 
   /**
-   * pedido: { projetoId, base, prompts, nomes, total,
+   * pedido: { projetoId, base, video, prompts, nomes, total,
    *           ajustes: { forca, passos, semente, suavidade, rosto, harmonia, naturalidade, continuidade } }
+   * video: vídeo escolhido como base (quadro(i) → quadro-fonte) ou null para usar a foto
    * segPorQuadro: estimativa inicial, usada na contagem regressiva do primeiro quadro
    */
-  async executar({ projetoId, base, prompts, nomes, total, ajustes }, segPorQuadro) {
+  async executar({ projetoId, base, video, prompts, nomes, total, ajustes }, segPorQuadro) {
     this.ativa = true;
     this.cancelada = false;
     const t0 = performance.now();
@@ -40,16 +41,19 @@ export class SessaoDeGeracao extends EventTarget {
         const cena = nomeDaCena(i, total, nomes, prompts.length);
         this.emitir('proximo', { indice: i, cena, segundos: segPorQuadro });
 
-        const canvas = await produzirQuadro({
-          cliente: this.cliente,
-          detector: this.detector,
-          base,
-          projetoId,
-          anterior,
-          ajustes,
-          indice: i,
-          parametros: parametrosDoQuadro(i, total, prompts, ajustes.semente, ajustes.suavidade),
-        });
+        const parametros = parametrosDoQuadro(i, total, prompts, ajustes.semente, ajustes.suavidade);
+        const canvas = video
+          ? await produzirQuadroDoVideo({ cliente: this.cliente, fonte: await video.quadro(i), projetoId, parametros, ajustes, indice: i })
+          : await produzirQuadro({
+            cliente: this.cliente,
+            detector: this.detector,
+            base,
+            projetoId,
+            anterior,
+            ajustes,
+            indice: i,
+            parametros,
+          });
         anterior = canvas;
 
         feitos = i + 1;

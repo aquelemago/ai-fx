@@ -14,6 +14,7 @@ import { descricaoAleatoria, sementeAleatoria } from '../../web/src/nucleo/domin
 import {
   CONFIGURACAO_PADRAO, comCenas, comRoteiro, completarConfiguracao, parteDaMontagem, parteDoPalco, pedidoDeGeracao,
 } from '../../web/src/nucleo/dominio/configuracao.js';
+import { amostragem } from '../../web/src/nucleo/dominio/video.js';
 
 test('plano: primeiro e último quadro caem exatamente na primeira e na última cena', () => {
   const prompts = ['a', 'b', 'c'];
@@ -290,4 +291,40 @@ test('configuração: pedido de geração troca {eu} e exige uma cena', () => {
   assert.equal(p.nomes, undefined);
   assert.equal(p.total, 24);
   assert.throws(() => pedidoDeGeracao(comCenas(CONFIGURACAO_PADRAO, ' ')), /pelo menos uma cena/);
+});
+
+test('vídeo: 34 s viram 80 quadros dos primeiros 10 s, a 8 por segundo', () => {
+  const a = amostragem(34);
+  assert.equal(a.total, 80);
+  assert.equal(a.cortado, true);
+  assert.deepEqual(a.instantes.slice(0, 2), [0, 0.125]);
+  assert.equal(a.instantes.at(-1), 9.875);
+  assert.equal(a.instantes.length, 80);
+});
+
+test('vídeo: 4 s viram 32 quadros, sem corte', () => {
+  const a = amostragem(4);
+  assert.equal(a.total, 32);
+  assert.equal(a.cortado, false);
+});
+
+test('vídeo: duração inválida não dá quadros', () => {
+  assert.equal(amostragem(0).total, 0);
+  assert.equal(amostragem(NaN).total, 0);
+});
+
+test('configuração: pedido com vídeo usa o total dele, sem continuidade nem naturalidade, sem mexer no salvo', () => {
+  const p = pedidoDeGeracao(CONFIGURACAO_PADRAO, { total: 80 });
+  assert.equal(p.total, 80);
+  assert.equal(p.ajustes.continuidade, 0);
+  assert.equal(p.ajustes.naturalidade, 0);
+  assert.equal(p.ajustes.forca, 0.82);
+  assert.equal(CONFIGURACAO_PADRAO.ajustes.naturalidade, 0.45);
+  assert.equal(CONFIGURACAO_PADRAO.ajustes.continuidade, 0.25);
+});
+
+test('plano: no pedido com vídeo o ruído fica fixo em todos os quadros', () => {
+  const { prompts, total, ajustes } = pedidoDeGeracao(CONFIGURACAO_PADRAO, { total: 80 });
+  const quadros = Array.from({ length: total }, (_, i) => parametrosDoQuadro(i, total, prompts, ajustes.semente, ajustes.suavidade));
+  assert.ok(quadros.every((q) => q.sementeA === 42 && q.mixSemente === 0));
 });

@@ -14,6 +14,7 @@ import { GerenteDeProjetos } from './nucleo/projetos/gerente.js';
 import { DetectorDeRosto } from './nucleo/rosto/detector.js';
 import { prepararFotoBase } from './nucleo/rosto/recorte.js';
 import { lerImagem } from './nucleo/util/imagem.js';
+import { abrirVideo } from './nucleo/video/extrator.js';
 import { gravarCanvas } from './nucleo/video/gravador.js';
 import { App } from './app/App.jsx';
 import { ContextoDoEstudio } from './app/contexto.js';
@@ -29,6 +30,7 @@ const estudio = new Estudio({
   sessao: new SessaoDeGeracao({ cliente, detector }),
   gerente: new GerenteDeProjetos({ cliente }),
   prepararFoto: (arquivo) => prepararFotoBase(arquivo, detector, new OffscreenCanvas(LADO_DA_FOTO, LADO_DA_FOTO)),
+  prepararVideo: (arquivo) => abrirVideo(arquivo, LADO_DA_FOTO),
   lerImagem,
   gravar: gravarCanvas,
 });
