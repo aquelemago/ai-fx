@@ -1,6 +1,6 @@
 // O que o palco mostra (formato, ritmo, gravação, download) e o que ele pode fazer.
 import { useEstado, useEstudio } from '../../app/contexto.js';
-import { controles } from '../../nucleo/estudio/estudio.js';
+import { baseAtual, controles } from '../../nucleo/estudio/estudio.js';
 
 export function usePalco() {
   const estudio = useEstudio();
@@ -13,7 +13,7 @@ export function usePalco() {
   return {
     formato: e.configuracao.formato,
     ritmo: e.configuracao.ritmo,
-    vazio: !e.foto && !e.videoFonte && !e.quadrosAtivos, // projeto de vídeo reaberto: sem base, mas com quadros
+    vazio: !baseAtual(e) && !e.quadrosAtivos, // projeto de vídeo reaberto: sem base, mas com quadros
     tocando: e.tocando,
     podeTocar: pode.tocar,
     podeGravar: pode.gravar,

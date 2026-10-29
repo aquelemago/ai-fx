@@ -3,6 +3,7 @@
 // redesenha sozinho a cada quadro da tela, lendo o ritmo e a foto direto do estúdio.
 import { useEffect, useRef } from 'react';
 import { useEstado, useEstudio } from '../../app/contexto.js';
+import { baseAtual } from '../../nucleo/estudio/estudio.js';
 import { centroDosOlhos } from '../../nucleo/rosto/geometria.js';
 import { Player } from '../../nucleo/video/player.js';
 import { Renderizador } from '../../nucleo/video/renderizador.js';
@@ -20,7 +21,7 @@ export function usePrevia() {
       renderizador: r,
       quadros: estudio.quadros,
       ritmo: () => estudio.estado.configuracao.ritmo,
-      fotoBase: () => estudio.estado.videoFonte?.canvas ?? estudio.estado.foto?.canvas ?? null,
+      fotoBase: () => baseAtual(estudio.estado)?.canvas ?? null,
       aoMudarQuadro: (q) => estudio.marcarAtual(q),
     });
     renderizador.current = r;
@@ -37,7 +38,7 @@ export function usePrevia() {
 
   // o recorte vertical (9:16) acompanha o rosto da base (no vídeo, o do 1º quadro-fonte)
   useEffect(() => {
-    const pontos = (videoFonte ?? foto)?.pontos;
+    const pontos = baseAtual({ foto, videoFonte })?.pontos;
     renderizador.current.rostoX = pontos ? centroDosOlhos(pontos).x : undefined;
   }, [foto, videoFonte]);
 

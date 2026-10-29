@@ -24,7 +24,7 @@ export class Estudio extends EventTarget {
    * cliente: ClienteApi          detector: DetectorDeRosto     quadros: ColecaoDeQuadros
    * sessao: SessaoDeGeracao      gerente: GerenteDeProjetos
    * prepararFoto(arquivo) → { canvas, pontos, mascara, lado }   (lança ErroDeRosto)
-   * prepararVideo(arquivo) → { canvas, duracao, total, cortado, quadro(i), fechar() }
+   * prepararVideo(arquivo) → 1º quadro-fonte { canvas, pontos, mascara, lado } com { duracao, total, cortado, quadro(i), fechar() }
    * lerImagem(url) → canvas | null                               (quadros salvos do projeto)
    * gravar(canvas, duracao, desenhar, aoProgresso) → { blob, extensao }
    */
@@ -410,7 +410,7 @@ export class Estudio extends EventTarget {
 export function controles(e) {
   const ocupado = e.gerando || e.gravando || e.gerandoRosto || e.carregandoProjeto;
   return {
-    gerar: e.gerando || (e.pronto && Boolean(e.foto || e.videoFonte) && Boolean(e.projeto) && !e.gerandoRosto && !e.carregandoProjeto),
+    gerar: e.gerando || (e.pronto && Boolean(baseAtual(e)) && Boolean(e.projeto) && !e.gerandoRosto && !e.carregandoProjeto),
     gerarRosto: e.pronto && Boolean(e.projeto) && !ocupado,
     tocar: e.quadrosAtivos >= 2,
     gravar: e.quadrosAtivos >= 2 && !e.gravando,
@@ -418,6 +418,9 @@ export function controles(e) {
     escolherBase: !ocupado,
   };
 }
+
+/** A base da geração: o vídeo, se houver, senão a foto (ou null). */
+export const baseAtual = (e) => e.videoFonte ?? e.foto;
 
 /** Quantos quadros a geração vai ter: com um vídeo como base, quem diz é ele. */
 export const totalDeQuadros = (e) => e.videoFonte?.total ?? e.configuracao.quadros;

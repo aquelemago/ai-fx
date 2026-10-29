@@ -1,6 +1,6 @@
 // O que a coluna de montagem mostra e o que ela pode fazer, a partir do estado do estúdio.
 import { useEstado, useEstudio } from '../../app/contexto.js';
-import { controles, segPorQuadroDaBase, totalDeQuadros } from '../../nucleo/estudio/estudio.js';
+import { baseAtual, controles, segPorQuadroDaBase, totalDeQuadros } from '../../nucleo/estudio/estudio.js';
 import { formatarTempo } from '../../nucleo/util/tempo.js';
 
 export function useMontagem() {
@@ -13,7 +13,7 @@ export function useMontagem() {
   return {
     servidor: e.servidor,
     configuracao: c,
-    foto: { canvas: e.videoFonte?.canvas ?? e.foto?.canvas ?? null, pronta: e.fotoPronta, info: e.infoFoto },
+    foto: { canvas: baseAtual(e)?.canvas ?? null, pronta: e.fotoPronta, info: e.infoFoto },
     estimativa: `Cerca de ${formatarTempo(total * segPorQuadroDaBase(e))} no seu processador.`,
     // com um vídeo como base, a quantidade vem dele e os ajustes de foto parada não valem
     quadrosDoVideo: e.videoFonte?.total ?? null,
