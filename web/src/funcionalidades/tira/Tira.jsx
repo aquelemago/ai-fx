@@ -2,7 +2,7 @@
 // cópia leva a prévia até ela; riscar tira o quadro do vídeo (e voltar devolve).
 import { useEffect, useRef, useState } from 'react';
 import { Botao, Icone, Nota, tipografia } from '../../design-system/index.js';
-import { useContagemRegressiva, useTira } from './useTira.js';
+import { useTira } from './useTira.js';
 import estilos from './Tira.module.css';
 
 const LADO_DA_MINIATURA = 224;
@@ -67,11 +67,15 @@ function Copia({ quadro, atual, aoEscolher, aoRiscar }) {
   );
 }
 
-/** Vaga do quadro que está sendo gerado, com a contagem regressiva do tempo estimado. */
+/** Vaga do quadro que está sendo gerado: a varredura em flash corre até o quadro chegar. */
 function Proximo({ indice, cena }) {
+  const n = indice + 1;
   return (
     <li className={juntar(estilos.copia, estilos.proximo)}>
-      <div className={estilos.rodape}><span>{`${doisDigitos(indice + 1)} · ${cena}`}</span></div>
+      <div className={estilos.gerando} role="status" aria-label={`Gerando o quadro ${n}`}>
+        <span className={estilos.varredura} />
+      </div>
+      <div className={estilos.rodape}><span>{`${doisDigitos(n)} · ${cena}`}</span></div>
     </li>
   );
 }

@@ -1,12 +1,10 @@
-import { afterEach, describe, expect, test, vi } from 'vitest';
+import { describe, expect, test } from 'vitest';
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { criarEstudioFalso, renderizarCom } from '../../teste/estudio-falso.jsx';
 import { Tira } from './Tira.jsx';
 
 const quadro = (indice, cena, fora = false) => ({ canvas: {}, indice, cena, fora });
-
-afterEach(() => vi.useRealTimers());
 
 describe('Tira', () => {
   test('a cópia mais nova fica no topo, com número e cena', () => {
@@ -53,16 +51,15 @@ describe('Tira', () => {
     expect(base.className).toContain('atual');
   });
 
-  test('a vaga do próximo quadro conta os segundos que faltam', () => {
-    vi.useFakeTimers();
+  test('a vaga do próximo quadro mostra a varredura até o quadro chegar', () => {
     const estudio = criarEstudioFalso({ proximo: { indice: 2, cena: 'meio-dia', fim: performance.now() + 9500 } });
     const { container } = renderizarCom(estudio, <Tira />);
     const vaga = container.querySelector('#tira li');
     expect(vaga.className).toContain('proximo');
-    expect(vaga.textContent).toBe('1003 · meio-dia');
-    act(() => vi.advanceTimersByTime(3000));
-    expect(vaga.querySelector('div').textContent).toBe('7');
+    expect(vaga.textContent).toBe('03 · meio-dia');
+    expect(screen.getByRole('status', { name: 'Gerando o quadro 3' })).toBeTruthy();
     act(() => estudio.mudar({ proximo: null }));
     expect(container.querySelector('#tira li')).toBe(null);
+    expect(screen.queryByRole('status')).toBe(null);
   });
 });
