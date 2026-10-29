@@ -23,7 +23,7 @@ class GerenteFalso extends EventTarget {
 }
 
 class SessaoFalsa extends EventTarget {
-  executar(pedido) { this.pedido = pedido; }
+  executar(pedido, segPorQuadro) { this.pedido = pedido; this.segPorQuadro = segPorQuadro; }
   cancelar() { this.cancelada = true; }
   emitir(tipo, detail) { this.dispatchEvent(new CustomEvent(tipo, { detail })); }
 }
@@ -161,10 +161,10 @@ test('estúdio: gerar acompanha a sessão até o fim', async () => {
 
 test('estúdio: o que fica habilitado em cada momento', () => {
   const base = { pronto: true, foto: {}, projeto: {}, quadrosAtivos: 2, infoFoto: TEXTO_DA_FOTO };
-  assert.deepEqual(controles(base), { gerar: true, gerarRosto: true, tocar: true, gravar: true, projetos: true });
+  assert.deepEqual(controles(base), { gerar: true, gerarRosto: true, tocar: true, gravar: true, projetos: true, escolherBase: true });
   assert.equal(controles({ ...base, foto: null }).gerar, false);
   assert.equal(controles({ ...base, pronto: false, gerando: true }).gerar, true, 'Parar continua disponível');
-  assert.deepEqual(controles({ ...base, gravando: true }), { gerar: true, gerarRosto: false, tocar: true, gravar: false, projetos: false });
+  assert.deepEqual(controles({ ...base, gravando: true }), { gerar: true, gerarRosto: false, tocar: true, gravar: false, projetos: false, escolherBase: false });
   assert.deepEqual(controles({ ...base, quadrosAtivos: 1 }).tocar, false);
   assert.equal(controles({ ...base, projeto: null }).projetos, false);
 });
@@ -231,4 +231,53 @@ test('estúdio: trocar de vídeo durante a geração não fecha o que a sessão 
   estudio.gerar();
   await estudio.escolherVideo(new File(['v'], 'b.mp4'));
   assert.equal(fechados, 0);
+});
+
+test('estúdio: escolher vídeo põe o Ritmo em 8 q/s e salva', async () => {
+  const { estudio, gerente } = montar({ manifestos: [manifesto()] });
+  await estudio.iniciar();
+  estudio.definirRitmo({ fps: 12 });
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  assert.equal(estudio.estado.configuracao.ritmo.fps, 8);
+  assert.equal(gerente.configuracoes.at(-1).ritmo.fps, 8);
+});
+
+test('estúdio: a base não troca enquanto gera', () => {
+  const base = { pronto: true, foto: {}, projeto: {}, quadrosAtivos: 0 };
+  assert.equal(controles(base).escolherBase, true);
+  assert.equal(controles({ ...base, gerando: true }).escolherBase, false);
+});
+
+test('estúdio: tempo por quadro do vídeo fica separado do da foto', async () => {
+  const { estudio, sessao } = montar({ manifestos: [manifesto()] });
+  await estudio.iniciar();
+  const daFoto = estudio.estado.segPorQuadro;
+  await estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  estudio.gerar();
+  sessao.emitir('fim', { motivo: 'completo', feitos: 80, total: 80, segundos: 1600, segPorQuadro: 20 });
+  assert.equal(estudio.estado.segPorQuadroVideo, 20);
+  assert.equal(estudio.estado.segPorQuadro, daFoto);
+  estudio.gerar();
+  assert.equal(sessao.segPorQuadro, 20);
+});
+
+test('estúdio: projeto gerado de vídeo reaberto avisa na aba Foto', async () => {
+  const { estudio } = montar({ manifestos: [manifesto({ quadros: [{ indice: 0, cena: 'a', fora: false }] })] });
+  await estudio.iniciar();
+  assert.equal(estudio.estado.infoFoto, 'Este projeto foi gerado de um vídeo. Escolha o vídeo de novo para gerar mais.');
+});
+
+test('estúdio: o tempo medido vai para a base com que a geração começou', async () => {
+  let abrir;
+  const { estudio, sessao } = montar({ manifestos: [manifesto()], prepararVideo: () => new Promise((ok) => (abrir = ok)) });
+  await estudio.iniciar();
+  await estudio.escolherFoto(new File(['x'], 'eu.png'));
+  const doVideo = estudio.estado.segPorQuadroVideo;
+  const escolhendo = estudio.escolherVideo(new File(['v'], 'eu.mp4'));
+  estudio.gerar();
+  abrir(videoFalso());
+  await escolhendo;
+  sessao.emitir('fim', { motivo: 'completo', feitos: 24, total: 24, segundos: 480, segPorQuadro: 20 });
+  assert.equal(estudio.estado.segPorQuadro, 20);
+  assert.equal(estudio.estado.segPorQuadroVideo, doVideo);
 });

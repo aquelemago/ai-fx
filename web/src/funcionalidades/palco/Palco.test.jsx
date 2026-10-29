@@ -78,4 +78,10 @@ describe('Palco', () => {
     act(() => estudio.mudar({ videoFonte: { canvas: {}, pontos, total: 12 } }));
     expect(estudio.previa.player.renderizador.rostoX).toBe(100);
   });
+
+  test('sem base mas com quadros salvos, a moldura mostra os quadros', () => {
+    const estudio = criarEstudioFalso({ quadrosAtivos: 8 });
+    const { container } = renderizarCom(estudio, <Palco />);
+    expect(container.querySelector('#vazio').hidden).toBe(true);
+  });
 });

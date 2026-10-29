@@ -11,7 +11,8 @@
   .linha:hover { border-color: var(--papel); }
   .linha.perigo { color: var(--erro); border-color: var(--vinho); }
   .linha.perigo:hover { border-color: var(--erro); }
-  .linha:disabled { color: var(--texto-2); border-color: var(--vinho); cursor: default; }
+  /* o EscolherArquivo é um <label> com cara de botão: fica desligado pelo input de dentro */
+  .linha:disabled, .linha:has(input:disabled) { color: var(--texto-2); border-color: var(--vinho); cursor: default; }
 
   /* a única placa invertida da tela */
   .principal {
