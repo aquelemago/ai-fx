@@ -29,14 +29,22 @@
 .fora .risco { display: block; }
 .atual { outline: 2px solid var(--papel); outline-offset: 3px; }
 .proximo { background: var(--cortina); color: var(--texto-2); animation: none; }
-.digito {
-  aspect-ratio: 1; display: grid; place-items: center;
-  font-size: 64px; font-weight: 700; line-height: 1; color: var(--flash);
+.gerando { position: relative; aspect-ratio: 1; overflow: hidden; background: var(--cortina-funda); }
+/* a varredura desce e sobe sem parar: não promete tempo, só mostra que a IA está trabalhando */
+.varredura {
+  position: absolute; inset: 0; border-top: 2px solid var(--flash);
+  animation: varrer 1.6s ease-in-out infinite alternate;
 }
+@keyframes varrer {
+  from { transform: translateY(0); }
+  to { transform: translateY(calc(100% - 2px)); }
+}
+@keyframes piscar { 50% { opacity: .25; } }
 .proximo .rodape { color: var(--texto-2); }
 
 @media (prefers-reduced-motion: reduce) {
   .copia { animation: none; }
+  .varredura { transform: translateY(calc(50% - 1px)); animation: piscar 2s steps(1) infinite; }
 }
 @media (max-width: 1100px) {
   .tira {
@@ -47,5 +55,4 @@
   .fenda { display: none; }
   .lista { display: flex; gap: 8px; overflow-x: auto; overflow-y: hidden; padding: 12px 16px; }
   .copia { width: 112px; flex: none; margin-top: 0; }
-  .digito { font-size: 40px; }
 }
