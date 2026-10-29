@@ -11,6 +11,8 @@
 //
 // Naturalidade 0 pula as etapas 5 e 6 (o rosto colado fica fixo, como uma imagem parada).
 // Continuidade 0 parte sempre só da foto original.
+//
+// Com um vídeo como base, cada quadro parte do quadro-fonte de mesmo número (produzirQuadroDoVideo).
 import { sementeDoRosto } from '../dominio/plano.js';
 import { alinhar, colarRosto, misturarImagens } from '../rosto/composicao.js';
 
@@ -43,4 +45,19 @@ export async function produzirQuadro({ cliente, detector, base, projetoId, anter
     baseId: idGuia, forca: ajustes.naturalidade, passos: ajustes.passos,
   }));
   return alinharAoFoco(refeito);
+}
+
+/**
+ * Um quadro do vídeo: o quadro-fonte vira a base, a IA o redesenha com a cena e o rosto daquele
+ * quadro-fonte é colado de volta, sem alinhar. Quadro-fonte sem rosto fica só com a saída da IA.
+ */
+export async function produzirQuadroDoVideo({ cliente, fonte, projetoId, parametros, ajustes, indice }) {
+  const { lado } = fonte;
+  const baseId = await cliente.enviarBase(await paraPng(fonte.canvas));
+  const cena = await createImageBitmap(await cliente.gerarQuadro({
+    ...parametros, baseId, projetoId, quadro: indice, forca: ajustes.forca, passos: ajustes.passos,
+  }));
+  const canvas = new OffscreenCanvas(lado, lado);
+  canvas.getContext('2d').drawImage(cena, 0, 0, lado, lado);
+  return fonte.mascara ? colarRosto(canvas, fonte, ajustes.rosto, ajustes.harmonia) : canvas;
 }

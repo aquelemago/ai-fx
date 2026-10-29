@@ -53,7 +53,12 @@ function PainelFoto() {
           <FotoBase canvas={m.foto.canvas} pronta={m.foto.pronta} />
           <div>
             <div className={estilos.acoesFoto}>
-              <EscolherArquivo id="arquivo" rotulo="Escolher foto" accept="image/*" aoEscolher={m.escolherFoto} />
+              <EscolherArquivo
+                id="arquivo" rotulo="Escolher foto" accept="image/*" disabled={!m.podeEscolherBase} aoEscolher={m.escolherFoto}
+              />
+              <EscolherArquivo
+                id="arquivoVideo" rotulo="Escolher vídeo" accept="video/*" disabled={!m.podeEscolherBase} aoEscolher={m.escolherVideo}
+              />
               <Botao id="gerarRosto" disabled={!m.podeGerarRosto} onClick={m.gerarRosto}>Gerar rosto</Botao>
             </div>
             <Nota id="infoBase">{m.foto.info}</Nota>
@@ -87,7 +92,11 @@ function PainelCenas() {
       </Grupo>
 
       <Grupo titulo="Quadros" conjunto>
-        <Segmentos id="quantidades" nome="quadros" opcoes={OPCOES_DE_QUADROS} valor={c.quadros} aoMudar={m.definirQuadros} />
+        <Segmentos
+          id="quantidades" nome="quadros" opcoes={OPCOES_DE_QUADROS} valor={c.quadros} aoMudar={m.definirQuadros}
+          disabled={!m.podeEscolherQuadros}
+        />
+        {!m.podeEscolherQuadros && <Nota>do vídeo: {m.quadrosDoVideo}</Nota>}
         <Nota id="estimativa">{m.estimativa}</Nota>
       </Grupo>
     </>
@@ -98,7 +107,7 @@ function PainelAjustes() {
   const m = useMontagem();
   return (
     <>
-      <Ajustes ajustes={m.configuracao.ajustes} definirAjuste={m.definirAjuste} />
+      <Ajustes ajustes={m.configuracao.ajustes} definirAjuste={m.definirAjuste} podeAjustarFoto={m.podeAjustarFoto} />
       <GerenciarProjeto />
     </>
   );

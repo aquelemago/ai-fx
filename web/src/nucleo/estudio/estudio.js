@@ -8,12 +8,14 @@ import {
 } from '../dominio/configuracao.js';
 import { arquivoDoQuadroFinal } from '../dominio/projeto.js';
 import { ROTEIROS } from '../dominio/roteiros.js';
+import { DURACAO_MAXIMA, QUADROS_POR_SEGUNDO } from '../dominio/video.js';
 import { descricaoAleatoria, sementeAleatoria } from '../dominio/rostos.js';
 import { ErroDeRosto } from '../rosto/erros.js';
 import { lerPreferencia, salvarPreferencia } from '../util/preferencias.js';
 import { formatarTempo } from '../util/tempo.js';
 
 export const TEXTO_DA_FOTO = 'De frente, com o rosto bem iluminado.';
+const TEXTO_DO_PROJETO_DE_VIDEO = 'Este projeto foi gerado de um vídeo. Escolha o vídeo de novo para gerar mais.';
 const TENTATIVAS_DE_ROSTO = 3; // se o detector não achar um rosto bom, tenta outra semente
 const INTERVALO_DO_STATUS_MS = 2000;
 
@@ -22,12 +24,13 @@ export class Estudio extends EventTarget {
    * cliente: ClienteApi          detector: DetectorDeRosto     quadros: ColecaoDeQuadros
    * sessao: SessaoDeGeracao      gerente: GerenteDeProjetos
    * prepararFoto(arquivo) → { canvas, pontos, mascara, lado }   (lança ErroDeRosto)
+   * prepararVideo(arquivo) → 1º quadro-fonte { canvas, pontos, mascara, lado } com { duracao, total, cortado, quadro(i), fechar() }
    * lerImagem(url) → canvas | null                               (quadros salvos do projeto)
    * gravar(canvas, duracao, desenhar, aoProgresso) → { blob, extensao }
    */
-  constructor({ cliente, detector, quadros, sessao, gerente, prepararFoto, lerImagem, gravar, buscar = (url) => fetch(url) }) {
+  constructor({ cliente, detector, quadros, sessao, gerente, prepararFoto, prepararVideo, lerImagem, gravar, buscar = (url) => fetch(url) }) {
     super();
-    Object.assign(this, { cliente, detector, quadros, sessao, gerente, prepararFoto, lerImagem, gravar, buscar });
+    Object.assign(this, { cliente, detector, quadros, sessao, gerente, prepararFoto, prepararVideo, lerImagem, gravar, buscar });
     this.previa = null; // { player, canvas }, ligada pelo palco
     this.aberturaAtual = 0; // descarta o carregamento de um projeto se outro foi aberto no meio
     this.urlDoVideo = null;
@@ -40,6 +43,7 @@ export class Estudio extends EventTarget {
       carregandoProjeto: false,
       configuracao: CONFIGURACAO_PADRAO,
       foto: null, // { id, canvas, pontos, mascara, lado }
+      videoFonte: null, // vídeo escolhido como base; quando existe, vale no lugar da foto
       fotoPronta: false,
       infoFoto: TEXTO_DA_FOTO,
       gerandoRosto: false,
@@ -49,6 +53,7 @@ export class Estudio extends EventTarget {
       infoGeracao: '',
       // velocidade da máquina, não do projeto: fica no navegador
       segPorQuadro: Number(lerPreferencia('segPorQuadro', 12)) || 12,
+      segPorQuadroVideo: Number(lerPreferencia('segPorQuadroVideo', 12)) || 12, // o vídeo faz uma passada só por quadro
       quadros: [], // cópia da lista da coleção, trocada a cada mudança
       quadrosAtivos: 0,
       quadroAtual: null,
@@ -147,6 +152,7 @@ export class Estudio extends EventTarget {
     const valendo = () => minhaAbertura === this.aberturaAtual;
 
     this.quadros.limpar();
+    this.trocarVideoFonte(null);
     this.mudar({
       projetos: this.gerente.projetos,
       projeto: manifesto,
@@ -171,6 +177,8 @@ export class Estudio extends EventTarget {
       } else {
         this.mudar({ infoFoto: 'A foto deste projeto sumiu da pasta. Escolha outra.' });
       }
+    } else if (manifesto.quadros.length) {
+      this.mudar({ infoFoto: TEXTO_DO_PROJETO_DE_VIDEO });
     }
 
     const lista = [...manifesto.quadros].sort((a, b) => a.indice - b.indice);
@@ -229,6 +237,7 @@ export class Estudio extends EventTarget {
     const id = salvarNoProjeto
       ? (await this.cliente.definirFotoDoProjeto(this.gerente.atual.id, png)).baseId
       : await this.cliente.enviarBase(png);
+    this.trocarVideoFonte(null);
     this.mudar({ foto: { ...foto, id } });
   }
 
@@ -244,6 +253,31 @@ export class Estudio extends EventTarget {
             : `Não consegui abrir essa foto: ${e.message}`,
       });
     }
+  }
+
+  /** O vídeo passa a ser a base; a foto fica guardada para quando outra base for escolhida. */
+  async escolherVideo(arquivo) {
+    this.mudar({ infoFoto: 'Abrindo o vídeo…' });
+    try {
+      const video = await this.prepararVideo(arquivo);
+      const segundos = Math.round(video.duracao);
+      this.trocarVideoFonte(video);
+      this.definirRitmo({ fps: QUADROS_POR_SEGUNDO });
+      this.mudar({
+        fotoPronta: true,
+        infoFoto: video.cortado
+          ? `Vídeo de ${segundos} s: vou usar os primeiros ${DURACAO_MAXIMA} s (${video.total} quadros).`
+          : `Vídeo de ${segundos} s: ${video.total} quadros.`,
+      });
+    } catch (e) {
+      this.mudar({ infoFoto: `Não consegui abrir esse vídeo: ${e.message}` });
+    }
+  }
+
+  trocarVideoFonte(video) {
+    // durante a geração a sessão ainda tira quadros do vídeo antigo: fechá-lo quebraria a extração
+    if (!this.estado.gerando) this.estado.videoFonte?.fechar();
+    this.mudar({ videoFonte: video });
   }
 
   /** A IA cria uma pessoa nova e a descrição sorteada vai para o campo "Você". */
@@ -277,14 +311,16 @@ export class Estudio extends EventTarget {
   gerar() {
     let pedido;
     try {
-      pedido = pedidoDeGeracao(this.estado.configuracao);
+      pedido = pedidoDeGeracao(this.estado.configuracao, this.estado.videoFonte);
     } catch (e) {
       this.mudar({ infoGeracao: e.message });
       return;
     }
     this.quadros.limpar();
     this.mudar({ video: null, gerando: true, parando: false, progresso: 0, infoGeracao: '' });
-    this.sessao.executar({ projetoId: this.gerente.atual.id, base: this.estado.foto, ...pedido }, this.estado.segPorQuadro);
+    const { foto, videoFonte } = this.estado;
+    this.chaveDoTempo = chaveDoSegPorQuadro(this.estado); // um vídeo que termina de abrir no meio não muda a medida
+    this.sessao.executar({ projetoId: this.gerente.atual.id, base: foto, video: videoFonte, ...pedido }, segPorQuadroDaBase(this.estado));
   }
 
   parar() {
@@ -305,8 +341,8 @@ export class Estudio extends EventTarget {
     ouvir('fim', (d) => {
       const fim = { proximo: null, gerando: false, parando: false };
       if (d.feitos > 0) {
-        fim.segPorQuadro = d.segPorQuadro;
-        salvarPreferencia('segPorQuadro', d.segPorQuadro.toFixed(1));
+        fim[this.chaveDoTempo] = d.segPorQuadro;
+        salvarPreferencia(this.chaveDoTempo, d.segPorQuadro.toFixed(1));
       }
       if (d.motivo === 'completo') {
         fim.infoGeracao = `${d.total} quadros prontos em ${formatarTempo(d.segundos)}. Risque os que não gostar.`;
@@ -374,10 +410,21 @@ export class Estudio extends EventTarget {
 export function controles(e) {
   const ocupado = e.gerando || e.gravando || e.gerandoRosto || e.carregandoProjeto;
   return {
-    gerar: e.gerando || (e.pronto && Boolean(e.foto) && Boolean(e.projeto) && !e.gerandoRosto && !e.carregandoProjeto),
+    gerar: e.gerando || (e.pronto && Boolean(baseAtual(e)) && Boolean(e.projeto) && !e.gerandoRosto && !e.carregandoProjeto),
     gerarRosto: e.pronto && Boolean(e.projeto) && !ocupado,
     tocar: e.quadrosAtivos >= 2,
     gravar: e.quadrosAtivos >= 2 && !e.gravando,
     projetos: Boolean(e.projeto) && !ocupado,
+    escolherBase: !ocupado,
   };
 }
+
+/** A base da geração: o vídeo, se houver, senão a foto (ou null). */
+export const baseAtual = (e) => e.videoFonte ?? e.foto;
+
+/** Quantos quadros a geração vai ter: com um vídeo como base, quem diz é ele. */
+export const totalDeQuadros = (e) => e.videoFonte?.total ?? e.configuracao.quadros;
+
+/** Tempo medido por quadro para a base atual (foto e vídeo são medidos à parte). */
+const chaveDoSegPorQuadro = (e) => (e.videoFonte ? 'segPorQuadroVideo' : 'segPorQuadro');
+export const segPorQuadroDaBase = (e) => e[chaveDoSegPorQuadro(e)];

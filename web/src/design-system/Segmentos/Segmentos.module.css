@@ -14,4 +14,8 @@
   .opcao:hover .placa { border-color: var(--vinho-claro); color: var(--texto); }
   .opcao input:checked + .placa { border-color: var(--papel); color: var(--papel); }
   .opcao input:focus-visible + .placa { outline: 2px solid var(--flash); outline-offset: 2px; }
+
+  /* desligado: como o botão desligado, sem destaque da opção marcada */
+  .opcao:has(input:disabled) { cursor: default; }
+  .opcao:has(input:disabled) .placa { border-color: var(--vinho); color: var(--texto-2); }
 }

@@ -45,9 +45,21 @@ export function parteDaMontagem(c) {
 /** Parte do palco no manifesto. */
 export const parteDoPalco = (c) => ({ formato: c.formato, ritmo: { ...c.ritmo } });
 
-/** O que a sessão de geração precisa. Lança erro se não houver nenhuma cena. */
-export function pedidoDeGeracao(c) {
+// Suavidade infinita: a semente nunca muda de bloco, então o ruído é o mesmo em todos os quadros
+const RUIDO_FIXO = Infinity;
+
+/**
+ * O que a sessão de geração precisa. Lança erro se não houver nenhuma cena.
+ * Com um vídeo como base, o total vem do vídeo e o ruído fica fixo, sem continuidade nem
+ * naturalidade: num vídeo elas viram rastro e tremido. A configuração salva não muda.
+ */
+export function pedidoDeGeracao(c, video = null) {
   const prompts = montarPrompts(c.cenas, c.descricao);
   if (!prompts.length) throw new Error('Escreva pelo menos uma cena em Editar cenas.');
-  return { prompts, nomes: ROTEIROS[c.roteiro]?.nomes, total: c.quadros, ajustes: { ...c.ajustes } };
+  const nomes = ROTEIROS[c.roteiro]?.nomes;
+  if (!video) return { prompts, nomes, total: c.quadros, ajustes: { ...c.ajustes } };
+  return {
+    prompts, nomes, total: video.total,
+    ajustes: { ...c.ajustes, suavidade: RUIDO_FIXO, continuidade: 0, naturalidade: 0 },
+  };
 }

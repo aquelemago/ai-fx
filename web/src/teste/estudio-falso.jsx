@@ -7,7 +7,7 @@ import { ColecaoDeQuadros } from '../nucleo/dominio/quadros.js';
 import { Estudio } from '../nucleo/estudio/estudio.js';
 
 const ACOES = [
-  'abrirProjeto', 'novoProjeto', 'renomearProjeto', 'excluirProjeto', 'escolherFoto', 'gerarRosto',
+  'abrirProjeto', 'novoProjeto', 'renomearProjeto', 'excluirProjeto', 'escolherFoto', 'escolherVideo', 'gerarRosto',
   'definirDescricao', 'escolherRoteiro', 'editarCenas', 'definirQuadros', 'definirAjuste',
   'definirFormato', 'definirRitmo', 'gerar', 'parar', 'alternarFora', 'irPara', 'tocar', 'gravarVideo',
 ];

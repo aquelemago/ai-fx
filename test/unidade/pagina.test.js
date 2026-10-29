@@ -5,7 +5,7 @@ import { nomeDaCena, parametrosDoQuadro, sementeDoRosto } from '../../web/src/nu
 import { FORMATOS, recorteNoFormato } from '../../web/src/nucleo/dominio/formatos.js';
 import { ROTEIROS, montarPrompts } from '../../web/src/nucleo/dominio/roteiros.js';
 import { ColecaoDeQuadros } from '../../web/src/nucleo/dominio/quadros.js';
-import { ordenarContorno, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../web/src/nucleo/rosto/geometria.js';
+import { ordenarContorno, quadradoDoVideo, quadradoEmVoltaDoRosto, transformacaoDeAlinhamento } from '../../web/src/nucleo/rosto/geometria.js';
 import { arquivoDoQuadroFinal, nomeDoNovoProjeto, resumoDosQuadros } from '../../web/src/nucleo/dominio/projeto.js';
 import { adiar } from '../../web/src/nucleo/util/adiar.js';
 import { GerenteDeProjetos } from '../../web/src/nucleo/projetos/gerente.js';
@@ -14,6 +14,7 @@ import { descricaoAleatoria, sementeAleatoria } from '../../web/src/nucleo/domin
 import {
   CONFIGURACAO_PADRAO, comCenas, comRoteiro, completarConfiguracao, parteDaMontagem, parteDoPalco, pedidoDeGeracao,
 } from '../../web/src/nucleo/dominio/configuracao.js';
+import { amostragem } from '../../web/src/nucleo/dominio/video.js';
 
 test('plano: primeiro e último quadro caem exatamente na primeira e na última cena', () => {
   const prompts = ['a', 'b', 'c'];
@@ -95,6 +96,19 @@ test('geometria: recorte em volta do rosto não sai da foto', () => {
   const pts = [{ x: 10, y: 10 }, { x: 90, y: 120 }];
   const q = quadradoEmVoltaDoRosto(pts, 300, 200);
   assert.ok(q.x >= 0 && q.y >= 0 && q.x + q.lado <= 300 && q.y + q.lado <= 200);
+});
+
+test('geometria: vídeo sem rosto recorta o quadrado do centro', () => {
+  assert.deepEqual(quadradoDoVideo(null, 720, 1280), { x: 0, y: 280, lado: 720 });
+  assert.deepEqual(quadradoDoVideo(null, 1280, 720), { x: 280, y: 0, lado: 720 });
+});
+
+test('geometria: vídeo com rosto recorta em volta dele', () => {
+  const pts = [{ x: 1000, y: 300 }, { x: 1100, y: 400 }];
+  const q = quadradoDoVideo(pts, 1280, 720);
+  assert.ok(q.x <= 1000 && q.x + q.lado >= 1100 && q.x + q.lado <= 1280);
+  assert.ok(q.y >= 0 && q.y + q.lado <= 720);
+  assert.notEqual(q.x, 280);
 });
 
 test('coleção de quadros: avisa mudanças e filtra os riscados', () => {
@@ -290,4 +304,40 @@ test('configuração: pedido de geração troca {eu} e exige uma cena', () => {
   assert.equal(p.nomes, undefined);
   assert.equal(p.total, 24);
   assert.throws(() => pedidoDeGeracao(comCenas(CONFIGURACAO_PADRAO, ' ')), /pelo menos uma cena/);
+});
+
+test('vídeo: 34 s viram 80 quadros dos primeiros 10 s, a 8 por segundo', () => {
+  const a = amostragem(34);
+  assert.equal(a.total, 80);
+  assert.equal(a.cortado, true);
+  assert.deepEqual(a.instantes.slice(0, 2), [0, 0.125]);
+  assert.equal(a.instantes.at(-1), 9.875);
+  assert.equal(a.instantes.length, 80);
+});
+
+test('vídeo: 4 s viram 32 quadros, sem corte', () => {
+  const a = amostragem(4);
+  assert.equal(a.total, 32);
+  assert.equal(a.cortado, false);
+});
+
+test('vídeo: duração inválida não dá quadros', () => {
+  assert.equal(amostragem(0).total, 0);
+  assert.equal(amostragem(NaN).total, 0);
+});
+
+test('configuração: pedido com vídeo usa o total dele, sem continuidade nem naturalidade, sem mexer no salvo', () => {
+  const p = pedidoDeGeracao(CONFIGURACAO_PADRAO, { total: 80 });
+  assert.equal(p.total, 80);
+  assert.equal(p.ajustes.continuidade, 0);
+  assert.equal(p.ajustes.naturalidade, 0);
+  assert.equal(p.ajustes.forca, 0.82);
+  assert.equal(CONFIGURACAO_PADRAO.ajustes.naturalidade, 0.45);
+  assert.equal(CONFIGURACAO_PADRAO.ajustes.continuidade, 0.25);
+});
+
+test('plano: no pedido com vídeo o ruído fica fixo em todos os quadros', () => {
+  const { prompts, total, ajustes } = pedidoDeGeracao(CONFIGURACAO_PADRAO, { total: 80 });
+  const quadros = Array.from({ length: total }, (_, i) => parametrosDoQuadro(i, total, prompts, ajustes.semente, ajustes.suavidade));
+  assert.ok(quadros.every((q) => q.sementeA === 42 && q.mixSemente === 0));
 });

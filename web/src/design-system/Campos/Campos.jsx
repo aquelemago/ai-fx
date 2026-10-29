@@ -35,11 +35,11 @@ export function Selecao({ opcoes, className, ...resto }) {
 }
 
 /** Botão de contorno que abre o seletor de arquivos. Pode escolher o mesmo arquivo de novo. */
-export function EscolherArquivo({ id, rotulo, accept, aoEscolher, className }) {
+export function EscolherArquivo({ id, rotulo, accept, aoEscolher, disabled, className }) {
   return (
     <label className={classesDoBotao({ className: juntar(estilos.arquivo, className) })}>
       <input
-        type="file" id={id} accept={accept}
+        type="file" id={id} accept={accept} disabled={disabled}
         onChange={(e) => {
           if (e.target.files[0]) aoEscolher(e.target.files[0]);
           e.target.value = '';

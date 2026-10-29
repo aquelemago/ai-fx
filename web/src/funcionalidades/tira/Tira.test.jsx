@@ -22,6 +22,12 @@ describe('Tira', () => {
     expect(screen.getByText('1 de 12').id).toBe('contagem');
   });
 
+  test('com um vídeo como base, o contador usa o total do vídeo', () => {
+    const estudio = criarEstudioFalso({ quadros: [quadro(0, 'amanhecer')], configuracao: { quadros: 24 }, videoFonte: { total: 12 } });
+    renderizarCom(estudio, <Tira />);
+    expect(screen.getByText('1 de 12').id).toBe('contagem');
+  });
+
   test('sem quadros, o contador fica vazio', () => {
     const estudio = criarEstudioFalso({ quadros: [], configuracao: { quadros: 24 } });
     renderizarCom(estudio, <Tira />);

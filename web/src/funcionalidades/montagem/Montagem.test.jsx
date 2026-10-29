@@ -71,4 +71,48 @@ describe('Montagem', () => {
     expect(screen.getByText('Procurando o rosto…')).toBeTruthy();
     expect(screen.getByText('Faltam cerca de 8 s.').getAttribute('role')).toBe('status');
   });
+
+  test('com vídeo como base, o botão diz Gerar 80 quadros e fica habilitado', () => {
+    const estudio = criarEstudioFalso({ ...pronto, foto: null, videoFonte: { canvas: null, total: 80 } });
+    renderizarCom(estudio, <Montagem aba="foto" />);
+    expect(screen.getByRole('button', { name: 'Gerar 80 quadros' }).disabled).toBe(false);
+  });
+
+  test('Escolher vídeo manda o arquivo ao estúdio', async () => {
+    const estudio = criarEstudioFalso();
+    renderizarCom(estudio, <Montagem aba="foto" />);
+    const arquivo = new File(['v'], 'eu.mp4', { type: 'video/mp4' });
+    await userEvent.upload(screen.getByLabelText('Escolher vídeo'), arquivo);
+    expect(estudio.escolherVideo).toHaveBeenCalledWith(arquivo);
+  });
+
+  test('com vídeo, Quadros fica desligado e mostra quantos vêm do vídeo', () => {
+    const estudio = criarEstudioFalso({ ...pronto, segPorQuadro: 10, segPorQuadroVideo: 20, videoFonte: { canvas: null, total: 12 } });
+    renderizarCom(estudio, <Montagem aba="cenas" />);
+    const radios = () => screen.getAllByRole('radio').filter((r) => r.name === 'quadros');
+    expect(radios().every((r) => r.disabled)).toBe(true);
+    expect(screen.getByText('do vídeo: 12')).toBeTruthy();
+    expect(screen.getByText('Cerca de 4 min 00 s no seu processador.')).toBeTruthy();
+    act(() => estudio.mudar({ videoFonte: null }));
+    expect(radios().some((r) => r.disabled)).toBe(false);
+    expect(screen.queryByText(/do vídeo/)).toBe(null);
+  });
+
+  test('com vídeo, os ajustes de foto parada ficam desligados com a nota', () => {
+    const estudio = criarEstudioFalso({ ...pronto, videoFonte: { canvas: null, total: 12 } });
+    renderizarCom(estudio, <Montagem aba="ajustes" />);
+    for (const nome of ['Suavidade', 'Naturalidade do rosto', 'Continuidade']) {
+      expect(screen.getByRole('slider', { name: nome }).disabled).toBe(true);
+    }
+    expect(screen.getByRole('slider', { name: 'Naturalidade do rosto' }).value).toBe('0.45');
+    expect(screen.getAllByText('Não se aplica ao vídeo.')).toHaveLength(3);
+    expect(screen.getByRole('slider', { name: 'Força da IA' }).disabled).toBe(false);
+  });
+
+  test('enquanto gera, não dá para trocar a base', () => {
+    const estudio = criarEstudioFalso({ ...pronto, gerando: true });
+    const { container } = renderizarCom(estudio, <Montagem aba="foto" />);
+    expect(container.querySelector('#arquivo').disabled).toBe(true);
+    expect(container.querySelector('#arquivoVideo').disabled).toBe(true);
+  });
 });

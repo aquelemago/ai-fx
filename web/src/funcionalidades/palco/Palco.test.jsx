@@ -61,4 +61,27 @@ describe('Palco', () => {
     act(() => estudio.mudar({ foto: { canvas: {}, pontos: Array.from({ length: 478 }, () => ({ x: 1, y: 1 })) } }));
     expect(container.querySelector('#vazio').hidden).toBe(true);
   });
+
+  test('com um vídeo como base, a moldura sai do convite e a prévia mostra o 1º quadro-fonte', () => {
+    const estudio = criarEstudioFalso();
+    const { container } = renderizarCom(estudio, <Palco />);
+    const quadroFonte = { width: 512, height: 512 };
+    act(() => estudio.mudar({ videoFonte: { canvas: quadroFonte, total: 12 } }));
+    expect(container.querySelector('#vazio').hidden).toBe(true);
+    expect(estudio.previa.player.fotoBase()).toBe(quadroFonte);
+  });
+
+  test('com um vídeo como base, o recorte 9:16 acompanha o rosto do 1º quadro-fonte', () => {
+    const estudio = criarEstudioFalso();
+    renderizarCom(estudio, <Palco />);
+    const pontos = Array.from({ length: 478 }, () => ({ x: 100, y: 200 }));
+    act(() => estudio.mudar({ videoFonte: { canvas: {}, pontos, total: 12 } }));
+    expect(estudio.previa.player.renderizador.rostoX).toBe(100);
+  });
+
+  test('sem base mas com quadros salvos, a moldura mostra os quadros', () => {
+    const estudio = criarEstudioFalso({ quadrosAtivos: 8 });
+    const { container } = renderizarCom(estudio, <Palco />);
+    expect(container.querySelector('#vazio').hidden).toBe(true);
+  });
 });
