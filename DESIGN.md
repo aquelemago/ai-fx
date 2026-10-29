@@ -26,16 +26,6 @@ typography:
     fontSize: "13px"
     fontWeight: 700
     letterSpacing: "0.12em"
-  digito:
-    fontFamily: "Barlow Condensed, sans-serif"
-    fontSize: "64px"
-    fontWeight: 700
-    lineHeight: 1
-  digito-compacto:
-    fontFamily: "Barlow Condensed, sans-serif"
-    fontSize: "40px"
-    fontWeight: 700
-    lineHeight: 1
 rounded:
   nenhum: "0px"
 spacing:
@@ -99,7 +89,7 @@ A tela é uma cabine de fotos à noite. A coluna da esquerda é o painel de moed
 palco é a janela onde a foto aparece emoldurada em papel, e a tira da direita é a fenda por onde
 as cópias caem, uma a uma, enquanto a IA trabalha. Tudo é escuro e quente como uma cortina de
 veludo vinho; o claro é sempre papel fotográfico, e só uma coisa acende de verdade: o amarelo do
-flash, no botão de gerar e na contagem do próximo quadro.
+flash, no botão de gerar e na varredura do próximo quadro.
 
 A densidade é de ferramenta: rótulos curtos em caixa alta, controles próximos, nada de texto de
 marketing. A personalidade está nos materiais (papel, cortina, fenda) e na queda das cópias,
@@ -117,7 +107,7 @@ não em ornamentos. Cor chapada, sem gradiente, sem sombra, sem canto arredondad
 Paleta quente e noturna: vinhos quase pretos, um papel creme e um amarelo de flash.
 
 ### Primary
-- **Flash** (flash): a placa invertida do botão Gerar, a barra de progresso e o dígito da contagem regressiva na tira. O contorno de foco usa a mesma cor.
+- **Flash** (flash): a placa invertida do botão Gerar, a barra de progresso e a linha de varredura da vaga do próximo quadro na tira. O contorno de foco usa a mesma cor.
 - **Flash Claro** (flash-claro): só o hover do botão Gerar.
 
 ### Neutral
@@ -133,7 +123,7 @@ Paleta quente e noturna: vinhos quase pretos, um papel creme e um amarelo de fla
 - **Erro** (erro): estado do servidor com erro e o botão Excluir projeto.
 
 ### Named Rules
-**A Regra do Flash Único.** O amarelo aparece só no que está acontecendo agora: o botão Gerar, a barra de progresso e a contagem do próximo quadro. A única exceção é o contorno de foco do teclado. Nenhum outro elemento ganha flash, nem em hover.
+**A Regra do Flash Único.** O amarelo aparece só no que está acontecendo agora: o botão Gerar, a barra de progresso e a varredura do próximo quadro. A única exceção é o contorno de foco do teclado. Nenhum outro elemento ganha flash, nem em hover.
 
 **A Regra do Papel.** O claro da tela é sempre papel fotográfico: moldura, cópias e o que está escolhido. Não há fundo branco nem cinza.
 
@@ -146,7 +136,6 @@ Paleta quente e noturna: vinhos quase pretos, um papel creme e um amarelo de fla
 na página toda, para contagens e tempos não dançarem.
 
 ### Hierarchy
-- **Display** (700, 64px, line-height 1): só o dígito da contagem regressiva na vaga do próximo quadro; `digito-compacto` (40px) quando a tira fica embaixo.
 - **Body** (500, 17px, 1.35): notas, mensagens de andamento, campos e opções.
 - **Label** (700, 13px, letter-spacing 0.12em, caixa alta): títulos de grupo, nome do app, resumos que abrem e fecham, rótulos dos deslizantes e texto dos botões (0.14em no botão Gerar).
 - **Rodapé da cópia** (700, 13px, letter-spacing 0.06em): número e nome da cena embaixo de cada cópia.
@@ -231,7 +220,9 @@ funcionalidades só ajustam o layout em volta deles.
 Cada quadro gerado vira uma cópia em papel com a miniatura e um rodapé (número · cena). A cópia
 nova cai pela fenda (0.9s, cubic-bezier(.16, 1, .3, 1)); riscada, a miniatura fica a 30% com um
 traço diagonal; a que está na prévia ganha contorno de 2px em papel. A vaga do próximo quadro é
-uma cópia em cortina com o dígito da contagem em flash.
+uma cópia em cortina com um quadrado em cortina funda onde uma linha de 2px em flash desce e
+sobe (1.6s, ease-in-out) até o quadro chegar; não promete tempo nem porcentagem. Com
+`prefers-reduced-motion`, a linha fica parada no meio e só pisca.
 
 ## Do's and Don'ts
 
@@ -239,10 +230,10 @@ uma cópia em cortina com o dígito da contagem em flash.
 - **Do** usar os componentes de `web/src/design-system` e ajustar só o layout em volta, no CSS Module da funcionalidade.
 - **Do** usar as variáveis de `tokens.css` (`var(--papel)`, `var(--t-rotulo)`) em vez de valores soltos.
 - **Do** separar com borda de 2px em vinho e destacar com papel.
-- **Do** respeitar `prefers-reduced-motion`: sem queda das cópias, sem transição de moldura, barra ou seta.
+- **Do** respeitar `prefers-reduced-motion`: sem queda das cópias, sem transição de moldura, barra ou seta, e a varredura parada.
 
 ### Don't:
-- **Don't** usar o flash fora do botão Gerar, da barra de progresso, da contagem do próximo quadro e do contorno de foco.
+- **Don't** usar o flash fora do botão Gerar, da barra de progresso, da varredura do próximo quadro e do contorno de foco.
 - **Don't** arredondar cantos, usar sombras ou gradientes.
 - **Don't** trazer outra família tipográfica ou títulos maiores que o rótulo.
 - **Don't** usar branco ou cinza neutro; o claro é papel e o escuro é cortina.
