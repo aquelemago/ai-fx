@@ -20,10 +20,18 @@ test('validação: aplica padrões e limites', () => {
   assert.equal(p.sementeB, p.sementeA);
 });
 
+test('validação: quadro aceita prompt vazio ("Só a imagem"); rosto não', () => {
+  const p = validarPedidoDeQuadro({ baseId: '0123456789ab', promptA: '' });
+  assert.equal(p.promptA, '');
+  assert.equal(p.promptB, '');
+  assert.throws(() => validarPedidoDeRosto({ descricao: ' ' }), /descricao/);
+});
+
 test('validação: recusa entradas erradas', () => {
   const ok = { baseId: '0123456789ab', promptA: 'x' };
   assert.throws(() => validarPedidoDeQuadro({ ...ok, baseId: '../x' }), /id de foto/);
-  assert.throws(() => validarPedidoDeQuadro({ ...ok, promptA: '' }), /promptA/);
+  assert.throws(() => validarPedidoDeQuadro({ ...ok, promptA: 3 }), /promptA/);
+  assert.throws(() => validarPedidoDeQuadro({ ...ok, promptB: null }), /promptB/);
   assert.throws(() => validarPedidoDeQuadro({ ...ok, forca: 'muita' }), /forca/);
   assert.throws(() => validarPedidoDeQuadro({ ...ok, sementeA: 1.5 }), /sementeA/);
   assert.throws(() => validarPedidoDeQuadro({ ...ok, promptA: 'a'.repeat(1001) }), /1000/);
