@@ -5,17 +5,18 @@ import {
   AreaDeTexto, Botao, CampoDeTexto, EscolherArquivo, Grupo, Nota, Segmentos,
 } from '../../design-system/index.js';
 import { QUANTIDADES } from '../../nucleo/dominio/configuracao.js';
-import { PERSONALIZADO, ROTEIROS } from '../../nucleo/dominio/roteiros.js';
+import { PERSONALIZADO, ROTEIROS, SO_A_IMAGEM } from '../../nucleo/dominio/roteiros.js';
 import { GerenciarProjeto } from '../projetos/index.js';
 import { Ajustes } from './Ajustes.jsx';
 import { FotoBase } from './FotoBase.jsx';
 import { useMontagem } from './useMontagem.js';
 import estilos from './Montagem.module.css';
 
-const OPCOES_DE_ROTEIRO = [...Object.keys(ROTEIROS), PERSONALIZADO].map((nome) => {
-  const n = ROTEIROS[nome]?.cenas.length;
-  return { valor: nome, detalhe: n ? `${n} cenas` : 'suas cenas' };
-});
+const OPCOES_DE_ROTEIRO = [
+  ...Object.keys(ROTEIROS).map((nome) => ({ valor: nome, detalhe: `${ROTEIROS[nome].cenas.length} cenas` })),
+  { valor: PERSONALIZADO, detalhe: 'suas cenas' },
+  { valor: SO_A_IMAGEM, detalhe: 'sem prompt' },
+];
 const OPCOES_DE_QUADROS = QUANTIDADES.map((n) => ({ valor: n }));
 
 export function Montagem({ aba }) {
@@ -86,9 +87,13 @@ function PainelCenas() {
       <Grupo titulo="Cenas" para="prompts">
         <AreaDeTexto
           id="prompts" rows={6} spellCheck={false} aria-label="Cenas, uma por linha" className={estilos.cenas}
-          value={c.cenas} onChange={(e) => m.editarCenas(e.target.value)}
+          value={c.cenas} onChange={(e) => m.editarCenas(e.target.value)} disabled={!m.podeEditarCenas}
         />
-        <Nota>{'Uma cena por linha, em inglês. {eu} vira a sua descrição.'}</Nota>
+        <Nota>
+          {m.podeEditarCenas
+            ? 'Uma cena por linha, em inglês. {eu} vira a sua descrição.'
+            : 'Sem prompt: a IA só relê a imagem. Use Força baixa para um filtro leve.'}
+        </Nota>
       </Grupo>
 
       <Grupo titulo="Quadros" conjunto>

@@ -8,8 +8,8 @@ import { validarIdDoProjeto } from '../projetos/manifesto.js';
 
 const ID_FOTO = /^[0-9a-f]{12}$/;
 
-const texto = (v, campo) => {
-  if (typeof v !== 'string' || !v.trim()) throw new ErroDeValidacao(`${campo} precisa ser um texto`);
+const texto = (v, campo, vazio = false) => {
+  if (typeof v !== 'string' || (!vazio && !v.trim())) throw new ErroDeValidacao(`${campo} precisa ser um texto`);
   if (v.length > 1000) throw new ErroDeValidacao(`${campo} passa de 1000 caracteres`);
   return v;
 };
@@ -43,17 +43,17 @@ export function validarPedidoDeRosto(corpo) {
   return { descricao, semente: inteiro(corpo.semente, 'semente', 0) };
 }
 
-/** Pedido de geração de um quadro, já normalizado com os valores padrão. */
+/** Pedido de geração de um quadro, já normalizado com os valores padrão. Prompt vazio = só a imagem. */
 export function validarPedidoDeQuadro(corpo) {
   if (!corpo || typeof corpo !== 'object') throw new ErroDeValidacao('corpo do pedido ausente');
-  const promptA = texto(corpo.promptA, 'promptA');
+  const promptA = texto(corpo.promptA, 'promptA', true);
   const sementeA = inteiro(corpo.sementeA, 'sementeA', 0);
   return {
     baseId: validarIdFoto(corpo.baseId),
     projetoId: corpo.projetoId === undefined ? undefined : validarIdDoProjeto(corpo.projetoId),
     quadro: corpo.quadro === undefined ? undefined : validarNumeroDoQuadro(corpo.quadro),
     promptA,
-    promptB: corpo.promptB === undefined ? promptA : texto(corpo.promptB, 'promptB'),
+    promptB: corpo.promptB === undefined ? promptA : texto(corpo.promptB, 'promptB', true),
     mixPrompt: numero(corpo.mixPrompt, 'mixPrompt', 0, 1, 0),
     sementeA,
     sementeB: inteiro(corpo.sementeB, 'sementeB', sementeA),

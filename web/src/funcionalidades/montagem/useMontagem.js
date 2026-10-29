@@ -1,5 +1,6 @@
 // O que a coluna de montagem mostra e o que ela pode fazer, a partir do estado do estúdio.
 import { useEstado, useEstudio } from '../../app/contexto.js';
+import { SO_A_IMAGEM } from '../../nucleo/dominio/roteiros.js';
 import { baseAtual, controles, segPorQuadroDaBase, totalDeQuadros } from '../../nucleo/estudio/estudio.js';
 import { formatarTempo } from '../../nucleo/util/tempo.js';
 
@@ -19,6 +20,7 @@ export function useMontagem() {
     quadrosDoVideo: e.videoFonte?.total ?? null,
     podeEscolherQuadros: !e.videoFonte,
     podeAjustarFoto: !e.videoFonte,
+    podeEditarCenas: c.roteiro !== SO_A_IMAGEM,
     gerar: {
       rotulo: e.gerando ? (e.parando ? 'Parando…' : 'Parar') : `Gerar ${total} quadros`,
       habilitado: pode.gerar,

@@ -115,4 +115,14 @@ describe('Montagem', () => {
     expect(container.querySelector('#arquivo').disabled).toBe(true);
     expect(container.querySelector('#arquivoVideo').disabled).toBe(true);
   });
+
+  test('com "Só a imagem", a caixa de cenas fica desligada com a nota', async () => {
+    const estudio = criarEstudioFalso();
+    renderizarCom(estudio, <Montagem aba="cenas" />);
+    await userEvent.click(screen.getByText('Só a imagem'));
+    expect(estudio.escolherRoteiro).toHaveBeenCalledWith('Só a imagem');
+    act(() => estudio.mudar({ configuracao: { ...estudio.estado.configuracao, roteiro: 'Só a imagem' } }));
+    expect(screen.getByLabelText('Cenas, uma por linha').disabled).toBe(true);
+    expect(screen.getByText('Sem prompt: a IA só relê a imagem. Use Força baixa para um filtro leve.')).toBeTruthy();
+  });
 });
