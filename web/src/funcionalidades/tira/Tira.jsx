@@ -68,11 +68,9 @@ function Copia({ quadro, atual, aoEscolher, aoRiscar }) {
 }
 
 /** Vaga do quadro que está sendo gerado, com a contagem regressiva do tempo estimado. */
-function Proximo({ indice, cena, fim }) {
-  const segundos = useContagemRegressiva(fim);
+function Proximo({ indice, cena }) {
   return (
     <li className={juntar(estilos.copia, estilos.proximo)}>
-      <div className={estilos.digito}>{segundos}</div>
       <div className={estilos.rodape}><span>{`${doisDigitos(indice + 1)} · ${cena}`}</span></div>
     </li>
   );
